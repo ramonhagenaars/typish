@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/ramonhagenaars/typish.svg?branch=master)](https://travis-ci.org/ramonhagenaars/typish)
+
 # Typish
 
 * Functions for thorough checks on types
