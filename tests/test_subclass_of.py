@@ -25,6 +25,7 @@ class TestSubclassOf(TestCase):
         self.assertTrue(subclass_of(List[int], List[object]))
         self.assertTrue(not subclass_of(List[object], List[int]))
         self.assertTrue(subclass_of(List[Unknown], List[int]))
+        self.assertTrue(not subclass_of('test', str))
 
     def test_subclass_of_tuple(self):
         self.assertTrue(subclass_of(Tuple[int, int], Tuple[int, ...]))

@@ -1,4 +1,4 @@
-from typing import Dict, Set, List, Tuple, Type, Callable, Any
+from typing import Dict, Set, List, Tuple, Type, Callable, Any, Awaitable
 from unittest import TestCase
 from typish._functions import get_type
 from typish._types import NoneType, Unknown
@@ -50,6 +50,13 @@ class TestGetType(TestCase):
         self.assertEqual(Callable, get_type(func4))
         self.assertEqual(Callable[[Any], NoneType], get_type(func5))
         self.assertEqual(Callable[[List[List[List[int]]]], NoneType], get_type(func6))
+
+    def test_get_type_async(self):
+
+        async def func(x: int) -> str:
+            return '42'
+
+        self.assertEqual(Callable[[int], Awaitable[str]], get_type(func))
 
     def test_get_type_lambda(self):
         self.assertEqual(Callable[[Unknown, Unknown], Unknown], get_type(lambda x, y: 42))

@@ -15,6 +15,10 @@ class _InterfaceMeta(type):
                     cls_signature: Dict[str, type]) -> Type['Interface']:
         return Interface(cls_signature=cls_signature, suppress_error=True)
 
+    @property
+    def __args__(cls):
+        return cls.signature
+
     def __instancecheck__(self, instance: object) -> bool:
         # Check if all attributes from self.signature are also present in
         # instance and also check that their types correspond.
