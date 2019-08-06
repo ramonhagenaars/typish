@@ -44,9 +44,8 @@ Define an interface with ``typish.Interface``.
 
 *Example:*
 ```python
-Duck = Interface[{
-    'walk': Callable[[], None], 
-    'quack': Callable[[], None]}]
+Duck = Interface['walk': Callable[[], None], 
+                 'quack': Callable[[], None]]
 ```
 
 Anything that has the attributes defined in the interface with the right type is 
