@@ -3,16 +3,25 @@ PRIVATE MODULE: do not import (from) it directly.
 
 This module contains class implementations.
 """
-from typing import Type, Dict, Tuple, Any
-from typish import get_type
-from typish._functions import instance_of
+from typing import Type, Dict, Tuple, Any, Callable, Union
+from typish._functions import (
+    get_type,
+    subclass_of,
+    instance_of,
+    get_args_and_return_type,
+)
 
 
 class _InterfaceMeta(type):
-    signature = None
+    signature = {}
 
-    def __getitem__(self,
-                    cls_signature: Dict[str, type]) -> Type['Interface']:
+    def __getitem__(
+            self,
+            cls_signature: Union[Dict[str, type], Tuple[slice, ...]]
+    ) -> Type['Interface']:
+        if not isinstance(cls_signature, dict):
+            cls_signature = {slice_.start: slice_.stop
+                             for slice_ in cls_signature}
         return Interface(cls_signature=cls_signature, suppress_error=True)
 
     @property
@@ -28,6 +37,29 @@ class _InterfaceMeta(type):
                 return False
         return True
 
+    def __subclasscheck__(self, subclass: type) -> bool:
+        # If an instance of type subclass is an instance of self, then subclass
+        # is a sub class of self.
+        self_sig = self.signature
+        other_sig = Interface.of(subclass).signature
+        for attr in self_sig:
+            if attr in other_sig:
+                attr_sig = other_sig[attr]
+                if (not isinstance(subclass.__dict__[attr], staticmethod)
+                        and not isinstance(subclass.__dict__[attr], classmethod)
+                        and subclass_of(attr_sig, Callable)):
+                    # The attr must be a regular method or class method, so the
+                    # first parameter should be ignored.
+                    args, rt = get_args_and_return_type(attr_sig)
+                    attr_sig = Callable[list(args[1:]), rt]
+                if not subclass_of(attr_sig, self_sig[attr]):
+                    return False
+        return True
+
+    def __eq__(self, other: 'Interface') -> bool:
+        return (isinstance(other, Interface)
+                and self.signature == other.signature)
+
     def __repr__(self):
         return 'Interface[{}]'.format(self.signature)
 
@@ -40,11 +72,11 @@ class Interface(type, metaclass=_InterfaceMeta):
     For example, to denote a type what has an attribute of type ``int``, you'll
     write:
 
-        ``Interface[{'some_attr': int}]``
+        ``Interface['some_attr': int]``
 
     You can also define functions:
 
-        ``Interface[{'some_attr': int, 'some_func': Callable[[int], str]}]``
+        ``Interface['some_attr': int, 'some_func': Callable[[int], str]]``
 
     The ``Interface`` instances can be used with ``instanceof`` to check
     whether some type adheres to that interface.
