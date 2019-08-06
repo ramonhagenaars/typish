@@ -1,4 +1,7 @@
+[![image](https://img.shields.io/pypi/pyversions/typish.svg)](https://pypi.org/project/typish/)
 [![Build Status](https://travis-ci.org/ramonhagenaars/typish.svg?branch=master)](https://travis-ci.org/ramonhagenaars/typish)
+[![Pypi version](https://badge.fury.io/py/typish.svg)](https://badge.fury.io/py/typish)
+[![codecov](https://codecov.io/gh/ramonhagenaars/typish/branch/master/graph/badge.svg)](https://codecov.io/gh/ramonhagenaars/typish)
 
 # Typish
 
