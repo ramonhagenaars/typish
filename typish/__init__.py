@@ -18,6 +18,7 @@ from typish._types import (
     NoneType,
 )
 from typish._classes import (
+    SubscriptableType,
     Interface,
     GenericCollection,
 )

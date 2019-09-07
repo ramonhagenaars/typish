@@ -3,7 +3,9 @@ PRIVATE MODULE: do not import (from) it directly.
 
 This module contains class implementations.
 """
-from typing import Type, Dict, Tuple, Any, Callable, Union
+import types
+from collections import OrderedDict
+from typing import Tuple, Any, Callable, Dict
 from typish._functions import (
     get_type,
     subclass_of,
@@ -12,36 +14,60 @@ from typish._functions import (
 )
 
 
-class _InterfaceMeta(type):
-    signature = {}
+class _SubscribedType(type):
+    """
+    This class is a placeholder to let the IDE know the attributes of the
+    returned type after a __getitem__.
+    """
+    __origin__ = None
+    __args__ = None
 
-    def __getitem__(
-            self,
-            cls_signature: Union[Dict[str, type], Tuple[slice, ...]]
-    ) -> Type['Interface']:
-        if not isinstance(cls_signature, dict):
-            cls_signature = {slice_.start: slice_.stop
-                             for slice_ in cls_signature}
-        return Interface(cls_signature=cls_signature, suppress_error=True)
 
-    @property
-    def __args__(cls):
-        return cls.signature
+class SubscriptableType(type):
+    """
+    This metaclass will allow a type to become subscriptable.
 
+    >>> class SomeType(metaclass=SubscriptableType):
+    ...     pass
+    >>> SomeTypeSub = SomeType['some args']
+    >>> SomeTypeSub.__args__
+    'some args'
+    >>> SomeTypeSub.__origin__
+    SomeType
+    """
+    def __init_subclass__(mcs, **kwargs):
+        mcs.__args__ = None
+        mcs.__origin__ = None
+
+    def __getitem__(self, item) -> _SubscribedType:
+        body = {
+            **self.__dict__,
+            '__args__': item,
+            '__origin__': self,
+        }
+        bases = self, *self.__bases__
+        return type(self.__name__, bases, body)
+
+
+class _InterfaceMeta(SubscriptableType):
+    """
+    This metaclass is coupled to ``Interface``.
+    """
     def __instancecheck__(self, instance: object) -> bool:
         # Check if all attributes from self.signature are also present in
         # instance and also check that their types correspond.
-        for key in self.signature:
+        sig = self.signature()
+        for key in sig:
             attr = getattr(instance, key, None)
-            if not attr or not instance_of(attr, self.signature[key]):
+            if not attr or not instance_of(attr, sig[key]):
                 return False
         return True
 
     def __subclasscheck__(self, subclass: type) -> bool:
         # If an instance of type subclass is an instance of self, then subclass
         # is a sub class of self.
-        self_sig = self.signature
-        other_sig = Interface.of(subclass).signature
+        self_sig = self.signature()
+        other_sig = Interface.of(subclass).signature()
         for attr in self_sig:
             if attr in other_sig:
                 attr_sig = other_sig[attr]
@@ -57,39 +83,64 @@ class _InterfaceMeta(type):
         return True
 
     def __eq__(self, other: 'Interface') -> bool:
-        return (isinstance(other, Interface)
-                and self.signature == other.signature)
+        return (isinstance(other, _InterfaceMeta)
+                and self.signature() == other.signature())
 
     def __repr__(self):
-        return 'Interface[{}]'.format(self.signature)
+        sig = self.signature()
+        sig_ = ', '.join(["'{}': {}".format(k, self._type_repr(sig[k]))
+                          for k in sig])
+        return 'typish.Interface[{}]'.format(sig_)
+
+    def _type_repr(self, obj):
+        """Return the repr() of an object, special-casing types (internal helper).
+
+        If obj is a type, we return a shorter version than the default
+        type.__repr__, based on the module and qualified name, which is
+        typically enough to uniquely identify a type.  For everything
+        else, we fall back on repr(obj).
+        """
+        if isinstance(obj, type) and not issubclass(obj, Callable):
+            if obj.__module__ == 'builtins':
+                return obj.__qualname__
+            return '{}.{}'.format(obj.__module__, obj.__qualname__)
+        if obj is ...:
+            return '...'
+        if isinstance(obj, types.FunctionType):
+            return obj.__name__
+        return repr(obj)
 
 
 class Interface(type, metaclass=_InterfaceMeta):
     """
-    The ``Interface`` can be used to denote any type that contains attributes,
-    such as classes or instances.
-
-    For example, to denote a type what has an attribute of type ``int``, you'll
-    write:
-
-        ``Interface['some_attr': int]``
-
-    You can also define functions:
-
-        ``Interface['some_attr': int, 'some_func': Callable[[int], str]]``
-
-    The ``Interface`` instances can be used with ``instanceof`` to check
-    whether some type adheres to that interface.
+    TODO rename to 'Something' or 'Anything' or 'Thing'
     """
-    def __new__(mcs, cls_signature: Dict[str, type],
-                **kwargs) -> Type['Interface']:
-        if 'suppress_error' not in kwargs:
-            raise TypeError('Type {} cannot be instantiated'
-                            .format(mcs.__name__))
-        cls_content = {
-            'signature': cls_signature
-        }
-        return type('Interface', (Interface, ), cls_content)
+    @classmethod
+    def signature(mcs) -> Dict[str, type]:
+        """
+        Return the signature of this ``Interface`` as a dict.
+        :return: a dict with attribute names as keys and types as values.
+        """
+        # result = mcs.__args__
+        # if not isinstance(mcs.__args__, dict):
+        #     result = OrderedDict()
+        #     for slice_ in sorted(mcs.__args__):
+        #         result[slice_.start] = slice_.stop
+
+        result = OrderedDict()
+        arg_keys = sorted(mcs.__args__)
+        if isinstance(mcs.__args__, dict):
+            for key in arg_keys:
+                result[key] = mcs.__args__[key]
+        else:
+            for slice_ in arg_keys:
+                result[slice_.start] = slice_.stop
+        return result
+
+    def __getattr__(self, item):
+        # This method exists solely to fool the IDE into believing that
+        # Interface can have any attribute.
+        return type.__getattr__(self, item)
 
     @staticmethod
     def of(obj: Any, exclude_privates: bool = True) -> 'Interface':

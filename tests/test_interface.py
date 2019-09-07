@@ -4,7 +4,7 @@ from tests.resources import some_module
 from typish._classes import Interface, GenericCollection
 
 
-Inyerface = Interface[{  # :-D
+Inyerface = Interface[{
     'a': int,
     'b': Callable[[int, int], str],
 }]
@@ -79,6 +79,10 @@ class TestInterface(TestCase):
 
     def test_module_interface_instance_check(self):
         self.assertTrue(isinstance(some_module, Inyerface))
+
+    def test_interface_repr(self):
+        self.assertEqual("typish.Interface['a': int, 'b': typing.Callable[[int, int], str]]",
+                         repr(Inyerface))
 
     def test_isinstance_generic_collection(self):
         isinstance(List[int], GenericCollection)
