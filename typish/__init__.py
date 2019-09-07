@@ -19,6 +19,6 @@ from typish._types import (
 )
 from typish._classes import (
     SubscriptableType,
-    Interface,
+    Something,
     GenericCollection,
 )

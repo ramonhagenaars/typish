@@ -32,8 +32,8 @@ class SubscriptableType(type):
     >>> SomeTypeSub = SomeType['some args']
     >>> SomeTypeSub.__args__
     'some args'
-    >>> SomeTypeSub.__origin__
-    SomeType
+    >>> SomeTypeSub.__origin__.__name__
+    'SomeType'
     """
     def __init_subclass__(mcs, **kwargs):
         mcs.__args__ = None
@@ -67,7 +67,7 @@ class _InterfaceMeta(SubscriptableType):
         # If an instance of type subclass is an instance of self, then subclass
         # is a sub class of self.
         self_sig = self.signature()
-        other_sig = Interface.of(subclass).signature()
+        other_sig = Something.of(subclass).signature()
         for attr in self_sig:
             if attr in other_sig:
                 attr_sig = other_sig[attr]
@@ -82,7 +82,7 @@ class _InterfaceMeta(SubscriptableType):
                     return False
         return True
 
-    def __eq__(self, other: 'Interface') -> bool:
+    def __eq__(self, other: 'Something') -> bool:
         return (isinstance(other, _InterfaceMeta)
                 and self.signature() == other.signature())
 
@@ -111,9 +111,10 @@ class _InterfaceMeta(SubscriptableType):
         return repr(obj)
 
 
-class Interface(type, metaclass=_InterfaceMeta):
+class Something(type, metaclass=_InterfaceMeta):
     """
-    TODO rename to 'Something' or 'Anything' or 'Thing'
+    This class allows one to define an interface for something that has some
+    attributes, such as objects or classes or maybe even modules.
     """
     @classmethod
     def signature(mcs) -> Dict[str, type]:
@@ -121,12 +122,6 @@ class Interface(type, metaclass=_InterfaceMeta):
         Return the signature of this ``Interface`` as a dict.
         :return: a dict with attribute names as keys and types as values.
         """
-        # result = mcs.__args__
-        # if not isinstance(mcs.__args__, dict):
-        #     result = OrderedDict()
-        #     for slice_ in sorted(mcs.__args__):
-        #         result[slice_.start] = slice_.stop
-
         result = OrderedDict()
         arg_keys = sorted(mcs.__args__)
         if isinstance(mcs.__args__, dict):
@@ -143,16 +138,16 @@ class Interface(type, metaclass=_InterfaceMeta):
         return type.__getattr__(self, item)
 
     @staticmethod
-    def of(obj: Any, exclude_privates: bool = True) -> 'Interface':
+    def of(obj: Any, exclude_privates: bool = True) -> 'Something':
         """
-        Return an ``Interface`` for the given ``obj``.
-        :param obj: the object of which an ``Interface`` is to be made.
+        Return a ``Something`` for the given ``obj``.
+        :param obj: the object of which a ``Something`` is to be made.
         :param exclude_privates: if ``True``, private variables are excluded.
-        :return: an ``Interface`` that corresponds to ``obj``.
+        :return: a ``Something`` that corresponds to ``obj``.
         """
         signature = {attr: get_type(getattr(obj, attr)) for attr in dir(obj)
                      if not exclude_privates or not attr.startswith('_')}
-        return Interface[signature]
+        return Something[signature]
 
 
-GenericCollection = Interface[{'__origin__': type, '__args__': Tuple[type]}]
+GenericCollection = Something[{'__origin__': type, '__args__': Tuple[type]}]

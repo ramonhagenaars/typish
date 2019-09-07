@@ -42,16 +42,36 @@ pip install typish
 | ``Module`` | The type of a module.
 | ``NoneType`` | The type of ``None``.
 
-### Interface
-Define an interface with ``typish.Interface``.
+### SubscriptableType
+This metaclass allows a type to become subscriptable.
 
 *Example:*
 ```python
-Duck = Interface['walk': Callable[[], None], 
+class MyClass(metaclass=SubscriptableType):
+    ...
+```
+Now you can do:
+```python
+MyClass2 = MyClass['some args']
+print(MyClass2.__args__)
+print(MyClass2.__origin__)
+```
+Output:
+```
+some args
+<class '__main__.MyClass'>
+```
+
+### Something
+Define an interface with ``typish.Something``.
+
+*Example:*
+```python
+Duck = Something['walk': Callable[[], None], 
                  'quack': Callable[[], None]]
 ```
 
-Anything that has the attributes defined in the interface with the right type is 
-considered an instance of that interface (classes, objects, even modules...).
+Anything that has the attributes defined in ``Something`` with the right type is 
+considered an instance of that ``Something`` (classes, objects, even modules...).
 
-You can check interfaces with the builtin ``isinstance`` or ``typish.instance_of``.
+The builtin ``isinstance`` is supported as well as ``typish.instance_of``.

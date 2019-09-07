@@ -1,10 +1,10 @@
 from typing import Callable, List, Set
 from unittest import TestCase
 from tests.resources import some_module
-from typish._classes import Interface, GenericCollection
+from typish._classes import Something, GenericCollection
 
 
-Inyerface = Interface[{
+Inyerface = Something[{
     'a': int,
     'b': Callable[[int, int], str],
 }]
@@ -59,7 +59,7 @@ class C6:
 
 class TestInterface(TestCase):
     def test_interface_with_slices(self):
-        self.assertEqual(Inyerface, Interface['a': int, 'b': Callable[[int, int], str]])
+        self.assertEqual(Inyerface, Something['a': int, 'b': Callable[[int, int], str]])
 
     def test_interface_instance_check(self):
         self.assertTrue(isinstance(C1(), Inyerface))
