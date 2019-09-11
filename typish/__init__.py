@@ -16,8 +16,10 @@ from typish._types import (
     Unknown,
     Module,
     NoneType,
+    Ellipsis_,
 )
 from typish._classes import (
-    Interface,
+    SubscriptableType,
+    Something,
     GenericCollection,
 )

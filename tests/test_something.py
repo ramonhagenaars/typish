@@ -1,10 +1,10 @@
 from typing import Callable, List, Set
 from unittest import TestCase
 from tests.resources import some_module
-from typish._classes import Interface, GenericCollection
+from typish._classes import Something, GenericCollection
 
 
-Inyerface = Interface[{  # :-D
+Inyerface = Something[{
     'a': int,
     'b': Callable[[int, int], str],
 }]
@@ -57,11 +57,11 @@ class C6:
         return str(a + b)
 
 
-class TestInterface(TestCase):
-    def test_interface_with_slices(self):
-        self.assertEqual(Inyerface, Interface['a': int, 'b': Callable[[int, int], str]])
+class TestSomething(TestCase):
+    def test_something_with_slices(self):
+        self.assertEqual(Inyerface, Something['a': int, 'b': Callable[[int, int], str]])
 
-    def test_interface_instance_check(self):
+    def test_something_instance_check(self):
         self.assertTrue(isinstance(C1(), Inyerface))
         self.assertTrue(isinstance(C2(), Inyerface))
         self.assertTrue(not isinstance(C3(), Inyerface))
@@ -69,7 +69,7 @@ class TestInterface(TestCase):
         self.assertTrue(isinstance(C5(), Inyerface))
         self.assertTrue(isinstance(C6(), Inyerface))
 
-    def test_interface_subclass_check(self):
+    def test_something_subclass_check(self):
         self.assertTrue(issubclass(C1, Inyerface))
         self.assertTrue(issubclass(C2, Inyerface))
         self.assertTrue(not issubclass(C3, Inyerface))
@@ -77,8 +77,12 @@ class TestInterface(TestCase):
         self.assertTrue(issubclass(C5, Inyerface))
         self.assertTrue(issubclass(C6, Inyerface))
 
-    def test_module_interface_instance_check(self):
+    def test_module_something_instance_check(self):
         self.assertTrue(isinstance(some_module, Inyerface))
+
+    def test_something_repr(self):
+        self.assertEqual("typish.Something['a': int, 'b': typing.Callable[[int, int], str]]",
+                         repr(Inyerface))
 
     def test_isinstance_generic_collection(self):
         isinstance(List[int], GenericCollection)
