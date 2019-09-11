@@ -46,7 +46,11 @@ class SubscriptableType(type):
             '__origin__': self,
         }
         bases = self, *self.__bases__
-        return type(self.__name__, bases, body)
+        result = type(self.__name__, bases, body)
+        if hasattr(result, '_after_subscription'):
+            # TODO check if _after_subscription is static
+            result._after_subscription(item)
+        return result
 
 
 class _SomethingMeta(SubscriptableType):
@@ -90,7 +94,7 @@ class _SomethingMeta(SubscriptableType):
         sig = self.signature()
         sig_ = ', '.join(["'{}': {}".format(k, self._type_repr(sig[k]))
                           for k in sig])
-        return 'typish.Interface[{}]'.format(sig_)
+        return 'typish.Something[{}]'.format(sig_)
 
     def _type_repr(self, obj):
         """Return the repr() of an object, special-casing types (internal helper).
@@ -119,7 +123,7 @@ class Something(type, metaclass=_SomethingMeta):
     @classmethod
     def signature(mcs) -> Dict[str, type]:
         """
-        Return the signature of this ``Interface`` as a dict.
+        Return the signature of this ``Something`` as a dict.
         :return: a dict with attribute names as keys and types as values.
         """
         result = OrderedDict()
@@ -134,7 +138,7 @@ class Something(type, metaclass=_SomethingMeta):
 
     def __getattr__(self, item):
         # This method exists solely to fool the IDE into believing that
-        # Interface can have any attribute.
+        # Something can have any attribute.
         return type.__getattr__(self, item)
 
     @staticmethod
