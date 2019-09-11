@@ -49,7 +49,7 @@ class SubscriptableType(type):
         return type(self.__name__, bases, body)
 
 
-class _InterfaceMeta(SubscriptableType):
+class _SomethingMeta(SubscriptableType):
     """
     This metaclass is coupled to ``Interface``.
     """
@@ -83,7 +83,7 @@ class _InterfaceMeta(SubscriptableType):
         return True
 
     def __eq__(self, other: 'Something') -> bool:
-        return (isinstance(other, _InterfaceMeta)
+        return (isinstance(other, _SomethingMeta)
                 and self.signature() == other.signature())
 
     def __repr__(self):
@@ -111,7 +111,7 @@ class _InterfaceMeta(SubscriptableType):
         return repr(obj)
 
 
-class Something(type, metaclass=_InterfaceMeta):
+class Something(type, metaclass=_SomethingMeta):
     """
     This class allows one to define an interface for something that has some
     attributes, such as objects or classes or maybe even modules.
