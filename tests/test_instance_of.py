@@ -1,5 +1,6 @@
-from typing import List, Dict, Union, Optional, Callable, Any
+from typing import List, Dict, Union, Optional, Callable, Any, Tuple, Type
 from unittest import TestCase
+
 from typish._functions import instance_of
 
 
@@ -63,3 +64,8 @@ class TestInstanceOf(TestCase):
     def test_lambda_instance_of_callable(self):
         self.assertTrue(instance_of(lambda x, y: 42, Callable[[int, str], str]))
         self.assertTrue(instance_of(lambda: 42, Callable[[], str]))
+
+    def test_instance_of_type(self):
+        self.assertTrue(instance_of(int, Type))
+        self.assertTrue(instance_of(int, Type[int]))
+        self.assertTrue(not instance_of(str, Type[int]))

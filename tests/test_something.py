@@ -1,8 +1,8 @@
-from typing import Callable, List, Set
+from typing import Callable, List, Set, Sequence
 from unittest import TestCase
-from tests.resources import some_module
-from typish._classes import Something, GenericCollection
 
+from tests.resources import some_module
+from typish._classes import Something, GenericCollectionType
 
 Inyerface = Something[{
     'a': int,
@@ -85,5 +85,5 @@ class TestSomething(TestCase):
                          repr(Inyerface))
 
     def test_isinstance_generic_collection(self):
-        isinstance(List[int], GenericCollection)
-        isinstance(Set[str], GenericCollection)
+        isinstance(List[int], GenericCollectionType)
+        isinstance(Set[str], GenericCollectionType)

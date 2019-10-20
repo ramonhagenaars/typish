@@ -7,7 +7,8 @@ import inspect
 import sys
 import types
 import typing
-from collections import deque, defaultdict, Set
+from collections import deque, defaultdict
+from collections.abc import Set
 from functools import lru_cache
 from inspect import getmro
 from typish._types import T, KT, VT, NoneType, Unknown, Empty
@@ -287,9 +288,8 @@ def _flatten(l: typing.Iterable[typing.Iterable[typing.Any]]) -> typing.List[typ
 def _common_ancestor(args: typing.Sequence[object], types: bool) -> type:
     if len(args) < 1:
         raise TypeError('common_ancestor() requires at least 1 argument')
-
-    mapper = (lambda x: x) if types else type
-    mros = [getmro(mapper(elem)) for elem in args]
+    tmap = (lambda x: x) if types else get_type
+    mros = [_get_mro(tmap(elem)) for elem in args]
     for cls in mros[0]:
         for mro in mros:
             if cls not in mro:
@@ -386,3 +386,11 @@ _type_per_alias = {
     'Type': type,
     'AbstractSet': Set,
 }
+
+
+def _get_mro(cls: type):
+    # Wrapper around ``getmro`` to allow types from ``Typing``.
+    origin = get_origin(cls)
+    if origin != cls:
+        return _get_mro(origin)
+    return getmro(cls)

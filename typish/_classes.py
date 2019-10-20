@@ -6,6 +6,7 @@ This module contains class implementations.
 import types
 from collections import OrderedDict
 from typing import Tuple, Any, Callable, Dict
+
 from typish._functions import (
     get_type,
     subclass_of,
@@ -36,6 +37,7 @@ class SubscriptableType(type):
     'SomeType'
     """
     def __init_subclass__(mcs, **kwargs):
+        mcs._hash = None
         mcs.__args__ = None
         mcs.__origin__ = None
 
@@ -51,6 +53,18 @@ class SubscriptableType(type):
             # TODO check if _after_subscription is static
             result._after_subscription(item)
         return result
+
+    def __eq__(self, other):
+        self_args = getattr(self, '__args__', None)
+        self_origin = getattr(self, '__origin__', None)
+        other_args = getattr(other, '__args__', None)
+        other_origin = getattr(other, '__origin__', None)
+        return self_args == other_args and self_origin == other_origin
+
+    def __hash__(self):
+        if not self._hash:
+            self._hash = hash('{}{}'.format(self.__origin__, self.__args__))
+        return self._hash
 
 
 class _SomethingMeta(SubscriptableType):
@@ -71,7 +85,7 @@ class _SomethingMeta(SubscriptableType):
         # If an instance of type subclass is an instance of self, then subclass
         # is a sub class of self.
         self_sig = self.signature()
-        other_sig = Something.of(subclass).signature()
+        other_sig = Something.like(subclass).signature()
         for attr in self_sig:
             if attr in other_sig:
                 attr_sig = other_sig[attr]
@@ -142,7 +156,7 @@ class Something(type, metaclass=_SomethingMeta):
         return type.__getattr__(self, item)
 
     @staticmethod
-    def of(obj: Any, exclude_privates: bool = True) -> 'Something':
+    def like(obj: Any, exclude_privates: bool = True) -> 'Something':
         """
         Return a ``Something`` for the given ``obj``.
         :param obj: the object of which a ``Something`` is to be made.
@@ -154,4 +168,4 @@ class Something(type, metaclass=_SomethingMeta):
         return Something[signature]
 
 
-GenericCollection = Something[{'__origin__': type, '__args__': Tuple[type]}]
+GenericCollectionType = Something['__origin__': type, '__args__': Tuple[type, ...]]
