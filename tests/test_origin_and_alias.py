@@ -1,4 +1,5 @@
-from collections import deque, defaultdict, Set
+from collections import deque, defaultdict
+from collections.abc import Set
 from typing import (
     Dict,
     List,
