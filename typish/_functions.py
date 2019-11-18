@@ -7,7 +7,8 @@ import inspect
 import sys
 import types
 import typing
-from collections import deque, defaultdict, Set
+from collections import deque, defaultdict
+from collections.abc import Set
 from functools import lru_cache
 from inspect import getmro
 from typish._types import T, KT, VT, NoneType, Unknown, Empty
