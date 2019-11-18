@@ -69,3 +69,7 @@ class TestInstanceOf(TestCase):
         self.assertTrue(instance_of(int, Type))
         self.assertTrue(instance_of(int, Type[int]))
         self.assertTrue(not instance_of(str, Type[int]))
+
+    def test_instance_of_tuple(self):
+        self.assertTrue(instance_of((1,), Tuple[int]))
+        self.assertTrue(instance_of((1, 2, 3), Tuple[int, ...]))

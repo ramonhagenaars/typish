@@ -21,5 +21,5 @@ from typish._types import (
 from typish._classes import (
     SubscriptableType,
     Something,
-    GenericCollectionType,
+    TypingType,
 )

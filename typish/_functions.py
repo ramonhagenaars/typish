@@ -26,6 +26,8 @@ def subclass_of(cls: type, *args: type) -> bool:
     if len(args) > 1:
         result = subclass_of(cls, args[0]) and subclass_of(cls, *args[1:])
     else:
+        if args[0] == cls:
+            return True
         result = _subclass_of(cls, args[0])
     return result
 
@@ -363,6 +365,16 @@ def _get_simple_name(cls: type) -> str:
     return cls_name
 
 
+def _get_mro(cls: type) -> typing.Tuple[type, ...]:
+    # Wrapper around ``getmro`` to allow types from ``Typing``.
+    if cls is ...:
+        return Ellipsis, object
+    origin, args = _split_generic(cls)
+    if origin != cls:
+        return _get_mro(origin)
+    return getmro(cls)
+
+
 _alias_per_type = {
     'list': typing.List,
     'tuple': typing.Tuple,
@@ -386,11 +398,3 @@ _type_per_alias = {
     'Type': type,
     'AbstractSet': Set,
 }
-
-
-def _get_mro(cls: type):
-    # Wrapper around ``getmro`` to allow types from ``Typing``.
-    origin = get_origin(cls)
-    if origin != cls:
-        return _get_mro(origin)
-    return getmro(cls)

@@ -4,8 +4,9 @@ PRIVATE MODULE: do not import (from) it directly.
 This module contains class implementations.
 """
 import types
+import warnings
 from collections import OrderedDict
-from typing import Tuple, Any, Callable, Dict
+from typing import Any, Callable, Dict, Tuple
 
 from typish._functions import (
     get_type,
@@ -141,7 +142,11 @@ class Something(type, metaclass=_SomethingMeta):
         :return: a dict with attribute names as keys and types as values.
         """
         result = OrderedDict()
-        arg_keys = sorted(mcs.__args__)
+        args = mcs.__args__
+        if isinstance(mcs.__args__, slice):
+            args = (mcs.__args__,)
+
+        arg_keys = sorted(args)
         if isinstance(mcs.__args__, dict):
             for key in arg_keys:
                 result[key] = mcs.__args__[key]
@@ -150,10 +155,17 @@ class Something(type, metaclass=_SomethingMeta):
                 result[slice_.start] = slice_.stop
         return result
 
-    def __getattr__(self, item):
+    def __getattr__(cls, item):
         # This method exists solely to fool the IDE into believing that
         # Something can have any attribute.
-        return type.__getattr__(self, item)
+        return type.__getattr__(cls, item)
+
+    @staticmethod
+    def of(obj: Any, exclude_privates: bool = True) -> 'Something':
+        warnings.warn('Something.of is deprecated and will be removed in the '
+                      'next minor release. Use Something.like instead.',
+                      category=DeprecationWarning, stacklevel=2)
+        return Something.like(obj, exclude_privates)
 
     @staticmethod
     def like(obj: Any, exclude_privates: bool = True) -> 'Something':
@@ -168,4 +180,4 @@ class Something(type, metaclass=_SomethingMeta):
         return Something[signature]
 
 
-GenericCollectionType = Something['__origin__': type, '__args__': Tuple[type, ...]]
+TypingType = Something['__origin__': type, '__args__': Tuple[type, ...]]
