@@ -4,8 +4,10 @@ PRIVATE MODULE: do not import (from) it directly.
 This module contains class implementations.
 """
 import types
+import warnings
 from collections import OrderedDict
-from typing import Tuple, Any, Callable, Dict
+from typing import Any, Callable, Dict, Tuple
+
 from typish._functions import (
     get_type,
     subclass_of,
@@ -36,6 +38,7 @@ class SubscriptableType(type):
     'SomeType'
     """
     def __init_subclass__(mcs, **kwargs):
+        mcs._hash = None
         mcs.__args__ = None
         mcs.__origin__ = None
 
@@ -51,6 +54,18 @@ class SubscriptableType(type):
             # TODO check if _after_subscription is static
             result._after_subscription(item)
         return result
+
+    def __eq__(self, other):
+        self_args = getattr(self, '__args__', None)
+        self_origin = getattr(self, '__origin__', None)
+        other_args = getattr(other, '__args__', None)
+        other_origin = getattr(other, '__origin__', None)
+        return self_args == other_args and self_origin == other_origin
+
+    def __hash__(self):
+        if not self._hash:
+            self._hash = hash('{}{}'.format(self.__origin__, self.__args__))
+        return self._hash
 
 
 class _SomethingMeta(SubscriptableType):
@@ -71,7 +86,7 @@ class _SomethingMeta(SubscriptableType):
         # If an instance of type subclass is an instance of self, then subclass
         # is a sub class of self.
         self_sig = self.signature()
-        other_sig = Something.of(subclass).signature()
+        other_sig = Something.like(subclass).signature()
         for attr in self_sig:
             if attr in other_sig:
                 attr_sig = other_sig[attr]
@@ -127,7 +142,11 @@ class Something(type, metaclass=_SomethingMeta):
         :return: a dict with attribute names as keys and types as values.
         """
         result = OrderedDict()
-        arg_keys = sorted(mcs.__args__)
+        args = mcs.__args__
+        if isinstance(mcs.__args__, slice):
+            args = (mcs.__args__,)
+
+        arg_keys = sorted(args)
         if isinstance(mcs.__args__, dict):
             for key in arg_keys:
                 result[key] = mcs.__args__[key]
@@ -136,13 +155,20 @@ class Something(type, metaclass=_SomethingMeta):
                 result[slice_.start] = slice_.stop
         return result
 
-    def __getattr__(self, item):
+    def __getattr__(cls, item):
         # This method exists solely to fool the IDE into believing that
         # Something can have any attribute.
-        return type.__getattr__(self, item)
+        return type.__getattr__(cls, item)
 
     @staticmethod
     def of(obj: Any, exclude_privates: bool = True) -> 'Something':
+        warnings.warn('Something.of is deprecated and will be removed in the '
+                      'next minor release. Use Something.like instead.',
+                      category=DeprecationWarning, stacklevel=2)
+        return Something.like(obj, exclude_privates)
+
+    @staticmethod
+    def like(obj: Any, exclude_privates: bool = True) -> 'Something':
         """
         Return a ``Something`` for the given ``obj``.
         :param obj: the object of which a ``Something`` is to be made.
@@ -154,4 +180,4 @@ class Something(type, metaclass=_SomethingMeta):
         return Something[signature]
 
 
-GenericCollection = Something[{'__origin__': type, '__args__': Tuple[type]}]
+TypingType = Something['__origin__': type, '__args__': Tuple[type, ...]]

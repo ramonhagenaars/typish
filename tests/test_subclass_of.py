@@ -29,13 +29,16 @@ class TestSubclassOf(TestCase):
 
     def test_subclass_of_tuple(self):
         self.assertTrue(subclass_of(Tuple[int, int], Tuple[int, ...]))
+        self.assertTrue(subclass_of(Tuple[int, ...], Tuple[int, ...]))
         self.assertTrue(subclass_of(Tuple[int, int], Tuple[object, ...]))
+        self.assertTrue(subclass_of(Tuple[int, ...], Tuple[object, ...]))
         self.assertTrue(subclass_of(Tuple[A, B], Tuple[A, ...]))
         self.assertTrue(subclass_of(Tuple[int, int], Tuple[int, int]))
         self.assertTrue(subclass_of(Tuple[int, int], Tuple[object, int]))
         self.assertTrue(not subclass_of(Tuple[int, int], Tuple[str, int]))
         self.assertTrue(not subclass_of(Tuple[int, int], Tuple[int, int, int]))
         self.assertTrue(not subclass_of(Tuple[int, int, int], Tuple[int, int]))
+        self.assertTrue(not subclass_of(Tuple[int, str], Tuple[int, ...]))
 
     def test_subclass_of_multiple(self):
         self.assertTrue(subclass_of(F, A))

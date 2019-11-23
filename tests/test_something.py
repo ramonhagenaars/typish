@@ -1,8 +1,8 @@
 from typing import Callable, List, Set
 from unittest import TestCase
-from tests.resources import some_module
-from typish._classes import Something, GenericCollection
 
+from tests.resources import some_module
+from typish._classes import Something, TypingType
 
 Inyerface = Something[{
     'a': int,
@@ -81,9 +81,10 @@ class TestSomething(TestCase):
         self.assertTrue(isinstance(some_module, Inyerface))
 
     def test_something_repr(self):
+        self.assertEqual("typish.Something['x': int]", str(Something['x': int]))
         self.assertEqual("typish.Something['a': int, 'b': typing.Callable[[int, int], str]]",
                          repr(Inyerface))
 
     def test_isinstance_generic_collection(self):
-        isinstance(List[int], GenericCollection)
-        isinstance(Set[str], GenericCollection)
+        isinstance(List[int], TypingType)
+        isinstance(Set[str], TypingType)

@@ -1,4 +1,5 @@
 from unittest import TestCase
+
 from typish._classes import SubscriptableType
 
 
@@ -19,3 +20,10 @@ class TestSubscriptableType(TestCase):
 
         C2 = C['arg']
         self.assertEqual('arg', C2.item)
+
+    def test_equility(self):
+        class SomeType(metaclass=SubscriptableType):
+            ...
+
+        self.assertEqual(SomeType['test'], SomeType['test'])
+        self.assertNotEqual(SomeType['test1'], SomeType['test2'])

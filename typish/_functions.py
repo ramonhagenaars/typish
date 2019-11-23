@@ -26,6 +26,8 @@ def subclass_of(cls: type, *args: type) -> bool:
     if len(args) > 1:
         result = subclass_of(cls, args[0]) and subclass_of(cls, *args[1:])
     else:
+        if args[0] == cls:
+            return True
         result = _subclass_of(cls, args[0])
     return result
 
@@ -288,9 +290,8 @@ def _flatten(l: typing.Iterable[typing.Iterable[typing.Any]]) -> typing.List[typ
 def _common_ancestor(args: typing.Sequence[object], types: bool) -> type:
     if len(args) < 1:
         raise TypeError('common_ancestor() requires at least 1 argument')
-
-    mapper = (lambda x: x) if types else type
-    mros = [getmro(mapper(elem)) for elem in args]
+    tmap = (lambda x: x) if types else get_type
+    mros = [_get_mro(tmap(elem)) for elem in args]
     for cls in mros[0]:
         for mro in mros:
             if cls not in mro:
@@ -362,6 +363,16 @@ def _get_simple_name(cls: type) -> str:
         cls_name = cls_name.split('.')[-1]  # Remove any . caused by repr.
         cls_name = cls_name.split(r"'>")[0]  # Remove any '>.
     return cls_name
+
+
+def _get_mro(cls: type) -> typing.Tuple[type, ...]:
+    # Wrapper around ``getmro`` to allow types from ``Typing``.
+    if cls is ...:
+        return Ellipsis, object
+    origin, args = _split_generic(cls)
+    if origin != cls:
+        return _get_mro(origin)
+    return getmro(cls)
 
 
 _alias_per_type = {
