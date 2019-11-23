@@ -88,3 +88,8 @@ class TestSomething(TestCase):
     def test_isinstance_generic_collection(self):
         isinstance(List[int], TypingType)
         isinstance(Set[str], TypingType)
+
+    def test_hash_something(self):
+        # If the lines below raise no errors, the test succeeds.
+        hash(Something['abc': int])
+        L = List[Something['abc': int]]

@@ -63,7 +63,7 @@ class SubscriptableType(type):
         return self_args == other_args and self_origin == other_origin
 
     def __hash__(self):
-        if not self._hash:
+        if not getattr(self, '_hash', None):
             self._hash = hash('{}{}'.format(self.__origin__, self.__args__))
         return self._hash
 
@@ -110,6 +110,10 @@ class _SomethingMeta(SubscriptableType):
         sig_ = ', '.join(["'{}': {}".format(k, self._type_repr(sig[k]))
                           for k in sig])
         return 'typish.Something[{}]'.format(sig_)
+
+    def __hash__(self):
+        # This explicit super call is required for Python 3.5 and 3.6.
+        return super.__hash__(self)
 
     def _type_repr(self, obj):
         """Return the repr() of an object, special-casing types (internal helper).

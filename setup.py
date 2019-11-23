@@ -7,7 +7,7 @@ with open('README.md', 'r') as fh:
 
 setup(
     name='typish',
-    version='1.3.0',
+    version='1.3.1',
     author='Ramon Hagenaars',
     author_email='ramon.hagenaars@gmail.com',
     description='Functionality for types',
