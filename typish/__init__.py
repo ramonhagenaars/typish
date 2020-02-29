@@ -23,3 +23,6 @@ from typish._classes import (
     Something,
     TypingType,
 )
+from typish._meta import (
+    __version__,
+)

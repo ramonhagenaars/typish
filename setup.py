@@ -1,19 +1,27 @@
+import os
+
 from setuptools import setup
 
+
+here = os.path.abspath(os.path.dirname(__file__))
+meta_info = {}
+with open(os.path.join(here, 'typish', '_meta.py'), 'r') as f:
+    exec(f.read(), meta_info)
 
 with open('README.md', 'r') as fh:
     long_description = fh.read()
 
 
 setup(
-    name='typish',
-    version='1.3.1',
-    author='Ramon Hagenaars',
-    author_email='ramon.hagenaars@gmail.com',
-    description='Functionality for types',
+    name=meta_info['__title__'],
+    version=meta_info['__version__'],
+    author=meta_info['__author__'],
+    author_email=meta_info['__author_email__'],
+    description=meta_info['__description__'],
+    url=meta_info['__url__'],
+    license=meta_info['__license__'],
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/ramonhagenaars/typish',
     packages=[
         'typish',
     ],
