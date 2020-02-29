@@ -184,10 +184,18 @@ def _subclass_of_generic(
     if info_generic_type is tuple:
         # Special case.
         result = _subclass_of_tuple(cls_args, info_args)
+    elif get_origin(cls) is tuple and info_generic_type is typing.Iterable:
+        # Another special case.
+        args = get_args(cls)
+        if len(args) > 1 and args[1] is ...:
+            args = [args[0]]
+        ancestor = common_ancestor_of_types(*args)
+        result = subclass_of(typing.Iterable[ancestor],
+                             typing.Iterable[args[0]])
     elif info_generic_type is typing.Union:
         # Another special case.
         result = _subclass_of_union(cls, info_args)
-    elif (cls_generic_type == info_generic_type and cls_args
+    elif (subclass_of(cls_generic_type, info_generic_type) and cls_args
             and len(cls_args) == len(info_args)):
         for tup in zip(cls_args, info_args):
             if not subclass_of(*tup):
