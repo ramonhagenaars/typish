@@ -1,5 +1,5 @@
 import sys
-from typing import List, Tuple, Union, Optional
+from typing import List, Tuple, Union, Optional, Iterable
 from unittest import TestCase
 from typish._functions import subclass_of
 from typish._types import Unknown, NoneType
@@ -39,6 +39,13 @@ class TestSubclassOf(TestCase):
         self.assertTrue(not subclass_of(Tuple[int, int], Tuple[int, int, int]))
         self.assertTrue(not subclass_of(Tuple[int, int, int], Tuple[int, int]))
         self.assertTrue(not subclass_of(Tuple[int, str], Tuple[int, ...]))
+
+    def test_subclass_of_iterable(self):
+        self.assertTrue(subclass_of(List[int], Iterable[int]))
+        self.assertTrue(subclass_of(Tuple[int, int, int], Iterable[int]))
+        self.assertTrue(subclass_of(Tuple[int, ...], Iterable[int]))
+        self.assertTrue(subclass_of(Tuple[B, C, D], Iterable[B]))
+        self.assertTrue(subclass_of(Tuple[B, C, D], Iterable[A]))
 
     def test_subclass_of_multiple(self):
         self.assertTrue(subclass_of(F, A))

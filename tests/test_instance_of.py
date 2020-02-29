@@ -1,4 +1,4 @@
-from typing import List, Dict, Union, Optional, Callable, Any, Tuple, Type
+from typing import List, Dict, Union, Optional, Callable, Any, Tuple, Type, Iterable
 from unittest import TestCase
 
 from typish._functions import instance_of
@@ -73,3 +73,7 @@ class TestInstanceOf(TestCase):
     def test_instance_of_tuple(self):
         self.assertTrue(instance_of((1,), Tuple[int]))
         self.assertTrue(instance_of((1, 2, 3), Tuple[int, ...]))
+
+    def test_instance_of_iterable(self):
+        self.assertTrue(instance_of([1, 2, 3], Iterable[int]))
+        self.assertTrue(instance_of((1, 2, 3), Iterable[int]))
