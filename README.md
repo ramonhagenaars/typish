@@ -9,6 +9,15 @@
 * Instance checks considering generics
 * Typesafe Duck-typing
 
+## Example
+
+```python
+>>> from typing import Iterable
+>>> from typish import instance_of
+>>> instance_of([1, 2, 3], Iterable[int])
+True
+```
+
 ## Installation
 
 ```
