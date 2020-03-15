@@ -33,7 +33,6 @@ class TestClsDict(TestCase):
             List[Union[str, int]]: 1,
             Tuple[float, ...]: 2,
         })
-
         self.assertEqual(1, cd[[1, 2, '3', 4]])
         self.assertEqual(2, cd[(1.0, 2.0, 3.0, 4.0)])
 

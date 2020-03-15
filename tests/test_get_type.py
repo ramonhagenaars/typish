@@ -1,5 +1,6 @@
 from typing import Dict, Set, List, Tuple, Type, Callable, Any, Awaitable, Union
 from unittest import TestCase
+
 from typish._functions import get_type
 from typish._types import NoneType, Unknown
 

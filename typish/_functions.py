@@ -4,13 +4,13 @@ PRIVATE MODULE: do not import (from) it directly.
 This module contains the implementation of all functions of typish.
 """
 import inspect
-import sys
 import types
 import typing
 from collections import deque, defaultdict
 from collections.abc import Set
 from functools import lru_cache
 from inspect import getmro
+
 from typish._types import T, KT, VT, NoneType, Unknown, Empty
 
 
@@ -182,7 +182,9 @@ def is_type_annotation(item: typing.Any) -> bool:
     :param item: the item in question.
     :return: ``True`` is ``item`` is a type annotation.
     """
-    return instance_of(item, type) or instance_of(item, typing._GenericAlias)
+    # Use _GenericAlias for Python 3.7+ and use GenericMeta for the rest.
+    super_cls = getattr(typing, '_GenericAlias', getattr(typing, 'GenericMeta', None))
+    return instance_of(item, type) or instance_of(item, super_cls)
 
 
 def _subclass_of_generic(
@@ -192,11 +194,12 @@ def _subclass_of_generic(
     # Check if cls is a subtype of info_generic_type, knowing that the latter
     # is a generic type.
     result = False
-    cls_generic_type, cls_args = _split_generic(cls)
+    cls_origin, cls_args = _split_generic(cls)
     if info_generic_type is tuple:
         # Special case.
-        result = _subclass_of_tuple(cls_args, info_args)
-    elif get_origin(cls) is tuple and info_generic_type is typing.Iterable:
+        result = (subclass_of(cls_origin, tuple)
+                  and _subclass_of_tuple(cls_args, info_args))
+    elif cls_origin is tuple and info_generic_type is typing.Iterable:
         # Another special case.
         args = get_args(cls)
         if len(args) > 1 and args[1] is ...:
@@ -207,7 +210,7 @@ def _subclass_of_generic(
     elif info_generic_type is typing.Union:
         # Another special case.
         result = _subclass_of_union(cls, info_args)
-    elif (subclass_of(cls_generic_type, info_generic_type) and cls_args
+    elif (subclass_of(cls_origin, info_generic_type) and cls_args
             and len(cls_args) == len(info_args)):
         for tup in zip(cls_args, info_args):
             if not subclass_of(*tup):
@@ -225,8 +228,7 @@ def _subclass_of_tuple(
         info_args: typing.Tuple[type, ...]) -> bool:
     result = False
     if len(info_args) == 2 and info_args[1] is ...:
-
-        type_ = getattr(info_args[0], '__origin__', None)
+        type_ = get_origin(info_args[0])
         if type_ is typing.Union:
             # A heterogeneous tuple: check each element if it subclasses the
             # union.
@@ -337,7 +339,6 @@ def _common_ancestor(args: typing.Sequence[object], types: bool) -> type:
 
 def _subclass_of(cls: type, clsinfo: type) -> bool:
     # Check whether cls is a subtype of clsinfo.
-
     clsinfo_origin, info_args = _split_generic(clsinfo)
     cls_origin = get_origin(cls)
     if cls is Unknown or clsinfo in (typing.Any, object):
@@ -355,23 +356,6 @@ def _subclass_of(cls: type, clsinfo: type) -> bool:
             result = issubclass(cls_origin, clsinfo_origin)
         except TypeError:
             result = False
-    return result
-
-
-def _union_subclass_of(
-        cls_args: typing.Tuple[type, ...],
-        clsinfo: type) -> bool:
-    # Handle subclass_of(union, *)
-    if sys.version_info[1] in (5, 6):
-        raise TypeError('typish does not support Unions for Python versions '
-                        'below 3.7')
-    result = False
-    for cls in cls_args:
-        if not subclass_of(cls, clsinfo):
-            break
-    else:
-        result = True
-
     return result
 
 
@@ -407,9 +391,16 @@ def _get_mro(cls: type) -> typing.Tuple[type, ...]:
     # Wrapper around ``getmro`` to allow types from ``Typing``.
     if cls is ...:
         return Ellipsis, object
+    elif cls is typing.Union:
+        # For Python <3.7, we cannot use mro.
+        super_cls = getattr(typing, '_GenericAlias',
+                            getattr(typing, 'GenericMeta', None))
+        return (typing.Union, super_cls, object)
+
     origin, args = _split_generic(cls)
     if origin != cls:
         return _get_mro(origin)
+
     return getmro(cls)
 
 

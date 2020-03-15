@@ -12,6 +12,7 @@ from typing import (
     Set as TypingSet
 )
 from unittest import TestCase
+
 from typish._functions import get_origin, get_alias
 
 

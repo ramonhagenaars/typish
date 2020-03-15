@@ -4,16 +4,15 @@ PRIVATE MODULE: do not import (from) it directly.
 This module contains class implementations.
 """
 import types
-import warnings
 from collections import OrderedDict
 from typing import Any, Callable, Dict, Tuple, Optional
 
-from typish import is_type_annotation
 from typish._functions import (
     get_type,
     subclass_of,
     instance_of,
     get_args_and_return_type,
+    is_type_annotation,
 )
 
 
@@ -164,13 +163,6 @@ class Something(type, metaclass=_SomethingMeta):
         # This method exists solely to fool the IDE into believing that
         # Something can have any attribute.
         return type.__getattr__(cls, item)
-
-    @staticmethod
-    def of(obj: Any, exclude_privates: bool = True) -> 'Something':
-        warnings.warn('Something.of is deprecated and will be removed in the '
-                      'next minor release. Use Something.like instead.',
-                      category=DeprecationWarning, stacklevel=2)
-        return Something.like(obj, exclude_privates)
 
     @staticmethod
     def like(obj: Any, exclude_privates: bool = True) -> 'Something':

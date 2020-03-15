@@ -1,5 +1,6 @@
 from typing import Callable
 from unittest import TestCase
+
 from typish import NoneType
 from typish._functions import get_args_and_return_type
 

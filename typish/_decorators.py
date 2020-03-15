@@ -4,6 +4,7 @@ PRIVATE MODULE: do not import (from) it directly.
 This module contains decorators.
 """
 import inspect
+
 from typish._functions import _map_empty, instance_of
 
 
