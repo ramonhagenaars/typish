@@ -61,14 +61,19 @@ class TestSubclassOf(TestCase):
         self.assertTrue(subclass_of(F, Optional[A]))
         self.assertTrue(subclass_of(NoneType, Optional[A]))
 
+    def test_union_subclass_of_union(self):
+        # Subclass holds if all elements of the first enum subclass any of
+        # the right enum.
+        self.assertTrue(subclass_of(Union[C, D], Union[A, B]))
+
+        # int is no subclass of any of Union[A, B].
+        self.assertTrue(not subclass_of(Union[C, D, int], Union[A, B]))
+
     def test_union_subclass_of(self):
         if sys.version_info[1] in (5, 6):
             with self.assertRaises(TypeError):
                 self.assertTrue(subclass_of(Union[int, A, B, F], Union[C, D]))
         else:
-            self.assertTrue(subclass_of(Union[int, F], A))
             self.assertTrue(subclass_of(Union[B, F], A))
             self.assertTrue(not subclass_of(Union[A, B], C))
-
             self.assertTrue(not subclass_of(Union[A, B], Union[C, D]))
-            self.assertTrue(subclass_of(Union[int, A, B, F], Union[C, D]))

@@ -1,4 +1,4 @@
-from typing import Dict, Set, List, Tuple, Type, Callable, Any, Awaitable
+from typing import Dict, Set, List, Tuple, Type, Callable, Any, Awaitable, Union
 from unittest import TestCase
 from typish._functions import get_type
 from typish._types import NoneType, Unknown
@@ -9,6 +9,9 @@ class TestGetType(TestCase):
         self.assertEqual(List[int], get_type([1, 2, 3]))
         self.assertEqual(List[object], get_type([1, 2, '3']))
         self.assertEqual(List[Unknown], get_type([]))
+
+    def test_get_type_list_with_union(self):
+        self.assertEqual(List[Union[int, str, float]], get_type([1, '2', 3.0], True))
 
     def test_get_type_set(self):
         self.assertEqual(Set[int], get_type({1, 2, 3}))
