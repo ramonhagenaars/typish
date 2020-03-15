@@ -74,6 +74,14 @@ class TestInstanceOf(TestCase):
         self.assertTrue(instance_of((1,), Tuple[int]))
         self.assertTrue(instance_of((1, 2, 3), Tuple[int, ...]))
 
+    def test_instance_of_list_with_union(self):
+        self.assertTrue(instance_of([1, '2', 3], List[Union[int, str]]))
+        self.assertTrue(not instance_of([1, '2', 3], List[Union[int, float]]))
+
+    def test_instance_of_tuple_with_union(self):
+        self.assertTrue(instance_of((1, '2', 3), Tuple[Union[int, str], ...]))
+        self.assertTrue(not instance_of((1, '2', 3), Tuple[Union[int, float], ...]))
+
     def test_instance_of_iterable(self):
         self.assertTrue(instance_of([1, 2, 3], Iterable[int]))
         self.assertTrue(instance_of((1, 2, 3), Iterable[int]))

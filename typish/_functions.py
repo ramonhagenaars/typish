@@ -4,13 +4,13 @@ PRIVATE MODULE: do not import (from) it directly.
 This module contains the implementation of all functions of typish.
 """
 import inspect
-import sys
 import types
 import typing
 from collections import deque, defaultdict
 from collections.abc import Set
 from functools import lru_cache
 from inspect import getmro
+
 from typish._types import T, KT, VT, NoneType, Unknown, Empty
 
 
@@ -40,7 +40,8 @@ def instance_of(obj: object, *args: type) -> bool:
     :param args: the type(s) of which ``obj`` is an instance or not.
     :return: ``True`` if ``obj`` is an instance of all types in ``args``.
     """
-    return subclass_of(get_type(obj), *args)
+    type_ = get_type(obj, use_union=True)
+    return subclass_of(type_, *args)
 
 
 def get_origin(t: type) -> type:
@@ -82,26 +83,27 @@ def get_alias(cls: T) -> typing.Optional[T]:
     return _alias_per_type.get(cls.__name__, None)
 
 
-def get_type(inst: T) -> typing.Type[T]:
+def get_type(inst: T, use_union: bool = False) -> typing.Type[T]:
     """
     Return a type, complete with generics for the given ``inst``.
     :param inst: the instance for which a type is to be returned.
+    :param use_union: if ``True``, the resulting type can contain a union.
     :return: the type of ``inst``.
     """
     result = type(inst)
     super_types = [
         (dict, _get_type_dict),
         (tuple, _get_type_tuple),
-        (str, lambda inst_: result),
+        (str, lambda inst_, _: result),
         (typing.Iterable, _get_type_iterable),
         (types.FunctionType, _get_type_callable),
         (types.MethodType, _get_type_callable),
-        (type, lambda inst_: typing.Type[inst]),
+        (type, lambda inst_, _: typing.Type[inst]),
     ]
 
     for super_type, func in super_types:
         if isinstance(inst, super_type):
-            result = func(inst)
+            result = func(inst, use_union)
             break
     return result
 
@@ -128,7 +130,7 @@ def get_args_and_return_type(hint: typing.Type[typing.Callable]) \
         -> typing.Tuple[typing.Optional[typing.Tuple[type]], typing.Optional[type]]:
     """
     Get the argument types and the return type of a callable type hint
-    (e.g. ``Callable[[int], str]).
+    (e.g. ``Callable[[int], str]``).
 
     Example:
     ```
@@ -173,6 +175,18 @@ def get_type_hints_of_callable(
     return result
 
 
+def is_type_annotation(item: typing.Any) -> bool:
+    """
+    Return whether item is a type annotation (a ``type`` or a type from
+    ``typing``, such as ``List``).
+    :param item: the item in question.
+    :return: ``True`` is ``item`` is a type annotation.
+    """
+    # Use _GenericAlias for Python 3.7+ and use GenericMeta for the rest.
+    super_cls = getattr(typing, '_GenericAlias', getattr(typing, 'GenericMeta', None))
+    return instance_of(item, type) or instance_of(item, super_cls)
+
+
 def _subclass_of_generic(
         cls: type,
         info_generic_type: type,
@@ -180,11 +194,12 @@ def _subclass_of_generic(
     # Check if cls is a subtype of info_generic_type, knowing that the latter
     # is a generic type.
     result = False
-    cls_generic_type, cls_args = _split_generic(cls)
+    cls_origin, cls_args = _split_generic(cls)
     if info_generic_type is tuple:
         # Special case.
-        result = _subclass_of_tuple(cls_args, info_args)
-    elif get_origin(cls) is tuple and info_generic_type is typing.Iterable:
+        result = (subclass_of(cls_origin, tuple)
+                  and _subclass_of_tuple(cls_args, info_args))
+    elif cls_origin is tuple and info_generic_type is typing.Iterable:
         # Another special case.
         args = get_args(cls)
         if len(args) > 1 and args[1] is ...:
@@ -195,7 +210,7 @@ def _subclass_of_generic(
     elif info_generic_type is typing.Union:
         # Another special case.
         result = _subclass_of_union(cls, info_args)
-    elif (subclass_of(cls_generic_type, info_generic_type) and cls_args
+    elif (subclass_of(cls_origin, info_generic_type) and cls_args
             and len(cls_args) == len(info_args)):
         for tup in zip(cls_args, info_args):
             if not subclass_of(*tup):
@@ -213,7 +228,13 @@ def _subclass_of_tuple(
         info_args: typing.Tuple[type, ...]) -> bool:
     result = False
     if len(info_args) == 2 and info_args[1] is ...:
-        result = subclass_of(common_ancestor_of_types(*cls_args), info_args[0])
+        type_ = get_origin(info_args[0])
+        if type_ is typing.Union:
+            # A heterogeneous tuple: check each element if it subclasses the
+            # union.
+            result = all([subclass_of(elem, info_args[0]) for elem in cls_args])
+        else:
+            result = subclass_of(common_ancestor_of_types(*cls_args), info_args[0])
     elif len(cls_args) == len(info_args):
         for c1, c2 in zip(cls_args, info_args):
             if not subclass_of(c1, c2):
@@ -229,28 +250,33 @@ def _split_generic(t: type) -> \
     return get_origin(t), get_args(t)
 
 
-def _get_type_iterable(inst: typing.Iterable):
+def _get_type_iterable(inst: typing.Iterable, use_union: bool):
     typing_type = get_alias(type(inst))
     common_cls = Unknown
     if inst:
-        common_cls = common_ancestor(*inst)
-        if typing_type:
-            if issubclass(common_cls, typing.Iterable) and typing_type is not str:
-                # Get to the bottom of it; obtain types recursively.
-                common_cls = get_type(common_cls(_flatten(inst)))
+        if use_union:
+            types = [get_type(elem) for elem in inst]
+            common_cls = typing.Union[tuple(types)]
+        else:
+            common_cls = common_ancestor(*inst)
+            if typing_type:
+                if issubclass(common_cls, typing.Iterable) and typing_type is not str:
+                    # Get to the bottom of it; obtain types recursively.
+                    common_cls = get_type(common_cls(_flatten(inst)))
     result = typing_type[common_cls]
     return result
 
 
-def _get_type_tuple(inst: tuple) -> typing.Dict[KT, VT]:
+def _get_type_tuple(inst: tuple, use_union: bool) -> typing.Dict[KT, VT]:
     args = [get_type(elem) for elem in inst]
     return typing.Tuple[tuple(args)]
 
 
 def _get_type_callable(
-        inst: typing.Callable) -> typing.Type[typing.Dict[KT, VT]]:
+        inst: typing.Callable,
+        use_union: bool) -> typing.Type[typing.Dict[KT, VT]]:
     if 'lambda' in str(inst):
-        result = _get_type_lambda(inst)
+        result = _get_type_lambda(inst, use_union)
     else:
         result = typing.Callable
         sig = inspect.signature(inst)
@@ -274,15 +300,17 @@ def _map_empty(annotation: type) -> type:
 
 
 def _get_type_lambda(
-        inst: typing.Callable) -> typing.Type[typing.Dict[KT, VT]]:
+        inst: typing.Callable,
+        use_union: bool) -> typing.Type[typing.Dict[KT, VT]]:
     args = [Unknown for _ in inspect.signature(inst).parameters]
     return_type = Unknown
     return typing.Callable[args, return_type]
 
 
-def _get_type_dict(inst: typing.Dict[KT, VT]) -> typing.Type[typing.Dict[KT, VT]]:
-    t_list_k = _get_type_iterable(list(inst.keys()))
-    t_list_v = _get_type_iterable(list(inst.values()))
+def _get_type_dict(inst: typing.Dict[KT, VT],
+                   use_union: bool) -> typing.Type[typing.Dict[KT, VT]]:
+    t_list_k = _get_type_iterable(list(inst.keys()), use_union)
+    t_list_v = _get_type_iterable(list(inst.values()), use_union)
     _, t_k_tuple = _split_generic(t_list_k)
     _, t_v_tuple = _split_generic(t_list_v)
     return typing.Dict[t_k_tuple[0], t_v_tuple[0]]
@@ -310,6 +338,7 @@ def _common_ancestor(args: typing.Sequence[object], types: bool) -> type:
 
 
 def _subclass_of(cls: type, clsinfo: type) -> bool:
+    # Check whether cls is a subtype of clsinfo.
     clsinfo_origin, info_args = _split_generic(clsinfo)
     cls_origin = get_origin(cls)
     if cls is Unknown or clsinfo in (typing.Any, object):
@@ -317,8 +346,9 @@ def _subclass_of(cls: type, clsinfo: type) -> bool:
     elif cls is typing.Any:
         result = False
     elif cls_origin is typing.Union:
+        # cls is a Union; all options of that Union must subclass clsinfo.
         _, cls_args = _split_generic(cls)
-        result = _union_subclass_of(cls_args, clsinfo)
+        result = all([subclass_of(elem, clsinfo) for elem in cls_args])
     elif info_args:
         result = _subclass_of_generic(cls, clsinfo_origin, info_args)
     else:
@@ -326,22 +356,6 @@ def _subclass_of(cls: type, clsinfo: type) -> bool:
             result = issubclass(cls_origin, clsinfo_origin)
         except TypeError:
             result = False
-    return result
-
-
-def _union_subclass_of(
-        cls_args: typing.Tuple[type, ...],
-        clsinfo: type) -> bool:
-    # Handle subclass_of(union, *)
-    if sys.version_info[1] in (5, 6):
-        raise TypeError('typish does not support Unions for Python versions '
-                        'below 3.7')
-    result = True
-    for cls in cls_args:
-        if subclass_of(cls, clsinfo):
-            break
-    else:
-        result = False
     return result
 
 
@@ -377,9 +391,16 @@ def _get_mro(cls: type) -> typing.Tuple[type, ...]:
     # Wrapper around ``getmro`` to allow types from ``Typing``.
     if cls is ...:
         return Ellipsis, object
+    elif cls is typing.Union:
+        # For Python <3.7, we cannot use mro.
+        super_cls = getattr(typing, '_GenericAlias',
+                            getattr(typing, 'GenericMeta', None))
+        return (typing.Union, super_cls, object)
+
     origin, args = _split_generic(cls)
     if origin != cls:
         return _get_mro(origin)
+
     return getmro(cls)
 
 
