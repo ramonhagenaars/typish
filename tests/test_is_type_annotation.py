@@ -1,8 +1,6 @@
 from typing import List
 from unittest import TestCase
 
-from pyparsing import Empty
-
 from typish import (
     is_type_annotation,
     T,
@@ -12,6 +10,7 @@ from typish import (
     Module,
     NoneType,
     Ellipsis_,
+    Empty,
 )
 
 
