@@ -79,7 +79,6 @@ class TestSubclassOf(TestCase):
 
     def test_union_subclass_of(self):
         if sys.version_info[1] in (5,):
-            # with self.assertRaises(TypeError):
             self.assertTrue(not subclass_of(Union[int, A, B, F], Union[C, D]))
         else:
             self.assertTrue(subclass_of(Union[B, F], A))
