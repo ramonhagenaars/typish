@@ -24,3 +24,5 @@ jobs:
       - name: Test
         run: |
             python setup.py test
+      - name: Coverage
+        uses: codecov/codecov-action@v1
