@@ -120,3 +120,36 @@ def func(item):
     handler = cd[item]  # Pick the right handler.
     handler(item)       # Call that handler.
 ```
+
+#### ClsFunction
+A callable that uses `ClsDict` to call the right function.
+Below is the same example as above, but slightly modified in 
+that is uses `ClsFunction`.
+
+*Example:*
+
+```python
+def _handle_str(item):
+    ...
+
+
+def _handle_int(item):
+    ...
+
+
+def func(item):
+    # Suppose item can be a string or an int, you can use ClsFunction to
+    # delegate to the right handler function.
+
+    function = ClsFunction({
+        str: _handle_str,
+        int: _handle_int,
+    })
+
+    function(item)
+
+```
+
+#### Literal
+A backwards compatible variant of typing.Literal (Python3.8). When importing 
+`Literal` from `typish`, you will get the `typing.Literal` if it is available.

@@ -5,7 +5,7 @@ This module contains class implementations.
 """
 import types
 from collections import OrderedDict
-from typing import Any, Callable, Dict, Tuple, Optional
+from typing import Any, Callable, Dict, Tuple, Optional, Union
 
 from typish._functions import (
     get_type,
@@ -217,6 +217,44 @@ class ClsDict(dict):
             return self.__getitem__(item)
         except KeyError:
             return default
+
+
+class ClsFunction:
+    """
+    ClsDict is a callable that takes a ClsDict or a dict. When called, it uses
+    the first argument to check for the right function in its body, executes it
+    and returns the result.
+    """
+    def __init__(self, body: Union[ClsDict, dict]):
+        if not instance_of(body, Union[ClsDict, dict]):
+            raise TypeError('ClsFunction expects a ClsDict or a dict that can '
+                            'be turned to a ClsDict.')
+        self.body = body
+        if not isinstance(body, ClsDict):
+            self.body = ClsDict(body)
+
+    def understands(self, item: Any) -> bool:
+        """
+        Check to see if this ClsFunction can take item.
+        :param item: the item that is checked.
+        :return: True if this ClsFunction can take item.
+        """
+        try:
+            self.body[item]
+            return True
+        except KeyError:
+            return False
+
+    def __call__(self, *args, **kwargs):
+        if not args:
+            raise TypeError('ClsFunction must be called with at least 1 '
+                            'positional argument.')
+        callable_ = self.body[args[0]]
+        try:
+            return callable_(*args, **kwargs)
+        except TypeError as err:
+            raise TypeError('Unable to call function for \'{}\': {}'
+                            .format(args[0], err.args[0]))
 
 
 class Literal(metaclass=SubscriptableType):
