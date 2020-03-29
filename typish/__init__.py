@@ -6,6 +6,7 @@ from typish._classes import (
     Something,
     TypingType,
     ClsDict,
+    ClsFunction,
 )
 from typish._functions import (
     subclass_of,
