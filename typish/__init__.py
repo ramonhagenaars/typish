@@ -1,3 +1,6 @@
+import typing
+
+import typish
 from typish._classes import (
     SubscriptableType,
     Something,
@@ -30,3 +33,6 @@ from typish._types import (
     NoneType,
     Ellipsis_,
 )
+
+# As of Python 3.8, Literal is in the typing module.
+Literal = getattr(typing, 'Literal', typish._classes.Literal)

@@ -219,4 +219,11 @@ class ClsDict(dict):
             return default
 
 
+class Literal(metaclass=SubscriptableType):
+    """
+    This is a backwards compatible variant of typing.Literal (Python 3.8+).
+    """
+    _name = 'Literal'
+
+
 TypingType = Something['__origin__': type, '__args__': Tuple[type, ...]]

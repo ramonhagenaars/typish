@@ -23,6 +23,9 @@ def subclass_of(cls: type, *args: type) -> bool:
     :return: True if ``cls`` is a subclass of all types in ``args`` while also
     considering generics.
     """
+    if args and getattr(args[0], '_name', None) == 'Literal':
+        return _check_literal(cls, subclass_of, *args)
+
     if len(args) > 1:
         result = subclass_of(cls, args[0]) and subclass_of(cls, *args[1:])
     else:
@@ -40,6 +43,9 @@ def instance_of(obj: object, *args: type) -> bool:
     :param args: the type(s) of which ``obj`` is an instance or not.
     :return: ``True`` if ``obj`` is an instance of all types in ``args``.
     """
+    if args and getattr(args[0], '_name', None) == 'Literal':
+        return _check_literal(obj, instance_of, *args)
+
     type_ = get_type(obj, use_union=True)
     return subclass_of(type_, *args)
 
@@ -90,6 +96,9 @@ def get_type(inst: T, use_union: bool = False) -> typing.Type[T]:
     :param use_union: if ``True``, the resulting type can contain a union.
     :return: the type of ``inst``.
     """
+    if inst is typing.Any:
+        return typing.Any
+
     result = type(inst)
     super_types = [
         (dict, _get_type_dict),
@@ -343,8 +352,6 @@ def _subclass_of(cls: type, clsinfo: type) -> bool:
     cls_origin = get_origin(cls)
     if cls is Unknown or clsinfo in (typing.Any, object):
         result = True
-    elif cls is typing.Any:
-        result = False
     elif cls_origin is typing.Union:
         # cls is a Union; all options of that Union must subclass clsinfo.
         _, cls_args = _split_generic(cls)
@@ -402,6 +409,13 @@ def _get_mro(cls: type) -> typing.Tuple[type, ...]:
         return _get_mro(origin)
 
     return getmro(cls)
+
+
+def _check_literal(obj: object, func: typing.Callable, *args: type) -> bool:
+    # Instance or subclass check for Literal.
+    leftovers = args[1:]
+    return (getattr(args[0], '__args__', None) == obj
+            and (not leftovers or func(obj, *leftovers)))
 
 
 _alias_per_type = {

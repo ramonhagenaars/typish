@@ -1,7 +1,8 @@
 import sys
-from typing import List, Tuple, Union, Optional, Iterable
+from typing import List, Tuple, Union, Optional, Iterable, Any
 from unittest import TestCase
 
+from typish import Literal
 from typish._functions import subclass_of
 from typish._types import Unknown, NoneType
 
@@ -84,3 +85,8 @@ class TestSubclassOf(TestCase):
             self.assertTrue(subclass_of(Union[B, F], A))
             self.assertTrue(not subclass_of(Union[A, B], C))
             self.assertTrue(not subclass_of(Union[A, B], Union[C, D]))
+
+    def test_instance_of_literal(self):
+        self.assertTrue(subclass_of(int, Literal[int]))
+        self.assertTrue(subclass_of(Any, Literal[Any]))
+        self.assertTrue(not subclass_of(int, Literal[Any]))

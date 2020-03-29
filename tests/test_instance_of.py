@@ -1,6 +1,7 @@
 from typing import List, Dict, Union, Optional, Callable, Any, Tuple, Type, Iterable
 from unittest import TestCase
 
+from typish import Literal
 from typish._functions import instance_of
 
 
@@ -31,6 +32,7 @@ class TestInstanceOf(TestCase):
         self.assertTrue(instance_of(F(), Union[A, str]))
         self.assertTrue(instance_of(F(), Optional[str]))
         self.assertTrue(instance_of(None, Optional[str]))
+        self.assertTrue(instance_of(Any, Union[int, Literal[Any]]))
 
     def test_instance_of_callable(self):
         def func1(x: int, y: str) -> object:
@@ -85,3 +87,12 @@ class TestInstanceOf(TestCase):
     def test_instance_of_iterable(self):
         self.assertTrue(instance_of([1, 2, 3], Iterable[int]))
         self.assertTrue(instance_of((1, 2, 3), Iterable[int]))
+
+    def test_instance_of_literal(self):
+        self.assertTrue(instance_of(42, Literal[42]))
+        self.assertTrue(instance_of(42, Literal[42], int))
+        self.assertTrue(not instance_of(43, Literal[42]))
+        self.assertTrue(not instance_of(42, Literal[42], str))
+        self.assertTrue(not instance_of(42, Literal))
+        self.assertTrue(instance_of(Any, Literal[Any]))
+        self.assertTrue(not instance_of(42, Literal[Any]))

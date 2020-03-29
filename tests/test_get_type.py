@@ -83,3 +83,8 @@ class TestGetType(TestCase):
             pass
 
         self.assertEqual(SomeRandomClass, get_type(SomeRandomClass()))
+
+    def test_get_type_any(self):
+        any_type = get_type(Any)
+
+        self.assertEqual(Any, any_type)
