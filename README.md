@@ -124,7 +124,7 @@ def func(item):
 #### ClsFunction
 A callable that uses `ClsDict` to call the right function.
 Below is the same example as above, but slightly modified in 
-that is uses `ClsFunction`.
+that it uses `ClsFunction`.
 
 *Example:*
 
