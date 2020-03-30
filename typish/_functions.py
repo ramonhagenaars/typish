@@ -23,7 +23,7 @@ def subclass_of(cls: type, *args: type) -> bool:
     :return: True if ``cls`` is a subclass of all types in ``args`` while also
     considering generics.
     """
-    if args and getattr(args[0], '_name', None) == 'Literal':
+    if args and _is_literal(args[0]):
         return _check_literal(cls, subclass_of, *args)
 
     if len(args) > 1:
@@ -43,7 +43,7 @@ def instance_of(obj: object, *args: type) -> bool:
     :param args: the type(s) of which ``obj`` is an instance or not.
     :return: ``True`` if ``obj`` is an instance of all types in ``args``.
     """
-    if args and getattr(args[0], '_name', None) == 'Literal':
+    if args and _is_literal(args[0]):
         return _check_literal(obj, instance_of, *args)
 
     type_ = get_type(obj, use_union=True)
@@ -411,11 +411,21 @@ def _get_mro(cls: type) -> typing.Tuple[type, ...]:
     return getmro(cls)
 
 
+def _is_literal(arg: typing.Any) -> bool:
+    # Return True if arg is a Literal.
+    origin = get_origin(arg)
+    return getattr(origin, '_name', None) == 'Literal'
+
+
 def _check_literal(obj: object, func: typing.Callable, *args: type) -> bool:
     # Instance or subclass check for Literal.
+    literal = args[0]
     leftovers = args[1:]
-    return (getattr(args[0], '__args__', None) == obj
-            and (not leftovers or func(obj, *leftovers)))
+    literal_args = getattr(literal, '__args__', None)
+    if literal_args:
+        literal_arg = literal_args[0]
+        return obj == literal_arg and (not leftovers or func(obj, *leftovers))
+    return False
 
 
 _alias_per_type = {
