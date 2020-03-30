@@ -257,7 +257,24 @@ class ClsFunction:
                             .format(args[0], err.args[0]))
 
 
-class Literal(metaclass=SubscriptableType):
+class _LiteralMeta(SubscriptableType):
+    """
+    A Metaclass that exists to serve Literal and alter the __args__ attribute.
+    """
+    def __getattribute__(cls, item):
+        """
+        This method makes sure that __args__ is a tuple, like with
+        typing.Literal.
+        :param item: the name of the attribute that is obtained.
+        :return: the attribute.
+        """
+        attr = SubscriptableType.__getattribute__(cls, item)
+        if item == '__args__':
+            attr = attr,
+        return attr
+
+
+class Literal(metaclass=_LiteralMeta):
     """
     This is a backwards compatible variant of typing.Literal (Python 3.8+).
     """
