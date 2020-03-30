@@ -268,10 +268,17 @@ class _LiteralMeta(SubscriptableType):
         :param item: the name of the attribute that is obtained.
         :return: the attribute.
         """
-        attr = SubscriptableType.__getattribute__(cls, item)
         if item == '__args__':
-            attr = attr,
-        return attr
+            try:
+                result = SubscriptableType.__getattribute__(cls, item),
+            except AttributeError:
+                # In case of Python 3.5
+                result = tuple()
+        elif item == '__origin__':
+            result = 'Literal'
+        else:
+            result = SubscriptableType.__getattribute__(cls, item)
+        return result
 
 
 class Literal(metaclass=_LiteralMeta):
