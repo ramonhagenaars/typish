@@ -5,7 +5,7 @@ This module contains class implementations.
 """
 import types
 from collections import OrderedDict
-from typing import Any, Callable, Dict, Tuple, Optional
+from typing import Any, Callable, Dict, Tuple, Optional, Union
 
 from typish._functions import (
     get_type,
@@ -217,6 +217,75 @@ class ClsDict(dict):
             return self.__getitem__(item)
         except KeyError:
             return default
+
+
+class ClsFunction:
+    """
+    ClsDict is a callable that takes a ClsDict or a dict. When called, it uses
+    the first argument to check for the right function in its body, executes it
+    and returns the result.
+    """
+    def __init__(self, body: Union[ClsDict, dict]):
+        if not instance_of(body, Union[ClsDict, dict]):
+            raise TypeError('ClsFunction expects a ClsDict or a dict that can '
+                            'be turned to a ClsDict.')
+        self.body = body
+        if not isinstance(body, ClsDict):
+            self.body = ClsDict(body)
+
+    def understands(self, item: Any) -> bool:
+        """
+        Check to see if this ClsFunction can take item.
+        :param item: the item that is checked.
+        :return: True if this ClsFunction can take item.
+        """
+        try:
+            self.body[item]
+            return True
+        except KeyError:
+            return False
+
+    def __call__(self, *args, **kwargs):
+        if not args:
+            raise TypeError('ClsFunction must be called with at least 1 '
+                            'positional argument.')
+        callable_ = self.body[args[0]]
+        try:
+            return callable_(*args, **kwargs)
+        except TypeError as err:
+            raise TypeError('Unable to call function for \'{}\': {}'
+                            .format(args[0], err.args[0]))
+
+
+class _LiteralMeta(SubscriptableType):
+    """
+    A Metaclass that exists to serve Literal and alter the __args__ attribute.
+    """
+    def __getattribute__(cls, item):
+        """
+        This method makes sure that __args__ is a tuple, like with
+        typing.Literal.
+        :param item: the name of the attribute that is obtained.
+        :return: the attribute.
+        """
+        if item == '__args__':
+            try:
+                result = SubscriptableType.__getattribute__(cls, item),
+            except AttributeError:
+                # In case of Python 3.5
+                result = tuple()
+        elif item == '__origin__':
+            result = 'Literal'
+        else:
+            result = SubscriptableType.__getattribute__(cls, item)
+        return result
+
+
+class Literal(metaclass=_LiteralMeta):
+    """
+    This is a backwards compatible variant of typing.Literal (Python 3.8+).
+    """
+    _name = 'Literal'
 
 
 TypingType = Something['__origin__': type, '__args__': Tuple[type, ...]]
