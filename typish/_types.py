@@ -14,4 +14,5 @@ Empty = Parameter.empty
 Unknown = type('Unknown', (Empty, ), {})
 Module = type(typing)
 NoneType = type(None)
-Ellipsis_ = type(...)
+Ellipsis_ = type(...)  # Use EllipsisType instead.
+EllipsisType = type(...)

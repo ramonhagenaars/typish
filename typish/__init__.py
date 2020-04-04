@@ -33,6 +33,7 @@ from typish._types import (
     Module,
     NoneType,
     Ellipsis_,
+    EllipsisType,
 )
 
 # As of Python 3.8, Literal is in the typing module.

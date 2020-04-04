@@ -1,6 +1,7 @@
+from typing import Tuple, Any, Union
 from unittest import TestCase
 
-from typish import ClsDict
+from typish import ClsDict, EllipsisType, Literal
 from typish._classes import ClsFunction
 
 
@@ -61,3 +62,18 @@ class TestClsFunction(TestCase):
 
         with self.assertRaises(TypeError):
             function(1, 2)  # The lambda expects only 1 argument.
+
+    def test_complex_cls_function(self):
+        # Test if a more complex ClsFunction can be created without problems.
+        _Size = Union[int, Literal[Any]]
+        _Type = Union[type, Literal[Any]]
+
+        ClsFunction({
+            _Size: lambda: 1,
+            _Type: lambda: 2,
+            Tuple[_Size, _Type]: lambda: 3,
+            Tuple[_Size, ...]: lambda: 4,
+            Tuple[Tuple[_Size, ...], _Type]: lambda: 5,
+            Tuple[Tuple[_Size, EllipsisType], _Type]: lambda: 6,
+            Tuple[Tuple[Literal[Any], EllipsisType], Literal[Any]]: lambda: 7,
+        })
