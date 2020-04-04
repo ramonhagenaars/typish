@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from typing import List, Union, Tuple
 from unittest import TestCase
 
@@ -51,3 +52,13 @@ class TestClsDict(TestCase):
         self.assertEqual('456', cd.get('test'))
         self.assertEqual(None, cd.get(42))
         self.assertEqual(123, cd.get(42, 123))
+
+    def test_ordereddict(self):
+        od = OrderedDict([
+            (int, 1),
+            (object, 2),
+        ])
+        cd = ClsDict(od)
+
+        self.assertEqual(1, cd[123])
+        self.assertEqual(2, cd['123'])
