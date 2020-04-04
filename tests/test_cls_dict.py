@@ -1,4 +1,5 @@
-from typing import List, Union, Tuple, OrderedDict
+from collections import OrderedDict
+from typing import List, Union, Tuple
 from unittest import TestCase
 
 from typish import ClsDict
