@@ -11,6 +11,14 @@ class TestClsFunction(TestCase):
         with self.assertRaises(TypeError):
             ClsFunction(123)
 
+    def test_instantiation_with_no_callable(self):
+        with self.assertRaises(TypeError):
+            ClsFunction({
+                int: lambda: 1,
+                str: lambda: 2,
+                object: 3,  # Invalid!
+            })
+
     def test_with_dict(self):
         function = ClsFunction({
             int: lambda x: x * 2,

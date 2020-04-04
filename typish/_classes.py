@@ -177,7 +177,7 @@ class Something(type, metaclass=_SomethingMeta):
         return Something[signature]
 
 
-class ClsDict(dict):
+class ClsDict(OrderedDict):
     """
     ClsDict is a dict that accepts (only) types as keys and will return its
     values depending on instance checks rather than equality checks.
@@ -229,6 +229,10 @@ class ClsFunction:
         if not instance_of(body, Union[ClsDict, dict]):
             raise TypeError('ClsFunction expects a ClsDict or a dict that can '
                             'be turned to a ClsDict.')
+        if not all(isinstance(value, Callable) for value in body.values()):
+            raise TypeError('ClsFunction expects a dict or ClsDict with only '
+                            'callables as values.')
+
         self.body = body
         if not isinstance(body, ClsDict):
             self.body = ClsDict(body)
