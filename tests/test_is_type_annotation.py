@@ -9,7 +9,7 @@ from typish import (
     Unknown,
     Module,
     NoneType,
-    Ellipsis_,
+    EllipsisType,
     Empty,
 )
 
@@ -25,7 +25,7 @@ class TestIsTypeAnnotation(TestCase):
         self.assertTrue(is_type_annotation(Unknown))
         self.assertTrue(is_type_annotation(Module))
         self.assertTrue(is_type_annotation(NoneType))
-        self.assertTrue(is_type_annotation(Ellipsis_))
+        self.assertTrue(is_type_annotation(EllipsisType))
 
         # No instances.
         self.assertTrue(not is_type_annotation(123))

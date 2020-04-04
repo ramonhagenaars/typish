@@ -99,6 +99,9 @@ def get_type(inst: T, use_union: bool = False) -> typing.Type[T]:
     if inst is typing.Any:
         return typing.Any
 
+    if str(inst).startswith('typing.Union'):
+        return getattr(typing, '_GenericAlias', getattr(typing, 'GenericMeta', type))
+
     result = type(inst)
     super_types = [
         (dict, _get_type_dict),

@@ -1,7 +1,7 @@
 from typing import Dict, Set, List, Tuple, Type, Callable, Any, Awaitable, Union
 from unittest import TestCase
 
-from typish._functions import get_type
+from typish._functions import get_type, instance_of
 from typish._types import NoneType, Unknown
 
 
@@ -88,3 +88,11 @@ class TestGetType(TestCase):
         any_type = get_type(Any)
 
         self.assertEqual(Any, any_type)
+
+    def test_get_type_union(self):
+        union_type = get_type(Union[int, str])
+
+        # The following line should not raise.
+        Union[(union_type,)]
+
+        self.assertTrue(instance_of(Union[int, str], union_type))
