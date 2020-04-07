@@ -1,6 +1,8 @@
 from typing import Dict, Set, List, Tuple, Type, Callable, Any, Awaitable, Union
 from unittest import TestCase
 
+import numpy
+
 from typish._functions import get_type, instance_of
 from typish._types import NoneType, Unknown
 
@@ -96,3 +98,7 @@ class TestGetType(TestCase):
         Union[(union_type,)]
 
         self.assertTrue(instance_of(Union[int, str], union_type))
+
+    def test_get_type_of_ndarray(self):
+        arr_type = get_type(numpy.array([1, 2, 3]))
+        self.assertEqual(numpy.ndarray, arr_type)

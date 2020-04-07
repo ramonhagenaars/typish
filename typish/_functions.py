@@ -113,10 +113,15 @@ def get_type(inst: T, use_union: bool = False) -> typing.Type[T]:
         (type, lambda inst_, _: typing.Type[inst]),
     ]
 
-    for super_type, func in super_types:
-        if isinstance(inst, super_type):
-            result = func(inst, use_union)
-            break
+    try:
+        for super_type, func in super_types:
+            if isinstance(inst, super_type):
+                result = func(inst, use_union)
+                break
+    except Exception:
+        # If anything went wrong, return the regular type.
+        # This is to support 3rd party libraries.
+        return type(inst)
     return result
 
 
@@ -195,8 +200,11 @@ def is_type_annotation(item: typing.Any) -> bool:
     :return: ``True`` is ``item`` is a type annotation.
     """
     # Use _GenericAlias for Python 3.7+ and use GenericMeta for the rest.
-    super_cls = getattr(typing, '_GenericAlias', getattr(typing, 'GenericMeta', None))
-    return instance_of(item, type) or instance_of(item, super_cls)
+    super_cls = getattr(typing, '_GenericAlias',
+                        getattr(typing, 'GenericMeta', None))
+    return (item is typing.Any
+            or instance_of(item, type)
+            or instance_of(item, super_cls))
 
 
 def _subclass_of_generic(

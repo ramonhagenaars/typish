@@ -11,6 +11,23 @@ with open('README.md', 'r') as fh:
     long_description = fh.read()
 
 
+requirements = []
+
+test_requirements = [
+    'numpy',
+    'pycodestyle',
+    'pylint',
+    'mypy',
+    'pytest',
+    'coverage',
+    'codecov',
+]
+
+extras = {
+    'test': test_requirements,
+}
+
+
 setup(
     name=meta_info['__title__'],
     version=meta_info['__version__'],
@@ -24,6 +41,9 @@ setup(
     packages=[
         'typish',
     ],
+    install_requires=requirements,
+    tests_require=test_requirements,
+    extras_require=extras,
     test_suite='tests',
     zip_safe=False,
     classifiers=[
