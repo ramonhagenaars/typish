@@ -3,10 +3,12 @@ PRIVATE MODULE: do not import (from) it directly.
 
 This module contains class implementations.
 """
+import inspect
 import types
 from collections import OrderedDict
-from typing import Any, Callable, Dict, Tuple, Optional, Union
+from typing import Any, Callable, Dict, Tuple, Optional, Union, List, Iterable
 
+from typish._types import Empty
 from typish._functions import (
     get_type,
     subclass_of,
@@ -225,17 +227,33 @@ class ClsFunction:
     the first argument to check for the right function in its body, executes it
     and returns the result.
     """
-    def __init__(self, body: Union[ClsDict, dict]):
-        if not instance_of(body, Union[ClsDict, dict]):
+    def __init__(self, body: Union[ClsDict, dict, Iterable[Callable]]):
+        if isinstance(body, ClsDict):
+            self.body = body
+        elif isinstance(body, dict):
+            self.body = ClsDict(body)
+        elif instance_of(body, Iterable[Callable]):
+            list_of_tuples = []
+            for func in body:
+                signature = inspect.signature(func)
+                params = list(signature.parameters.keys())
+                if not params:
+                    raise TypeError('ClsFunction expects callables that take '
+                                    'at least one parameter, {} does not.'
+                                    .format(func.__name__))
+                first_param = signature.parameters[params[0]]
+                hint = first_param.annotation
+                key = Any if hint == Empty else hint
+                list_of_tuples.append((key, func))
+            self.body = ClsDict(OrderedDict(list_of_tuples))
+        else:
             raise TypeError('ClsFunction expects a ClsDict or a dict that can '
-                            'be turned to a ClsDict.')
-        if not all(isinstance(value, Callable) for value in body.values()):
+                            'be turned to a ClsDict or an iterable of '
+                            'callables.')
+
+        if not all(isinstance(value, Callable) for value in self.body.values()):
             raise TypeError('ClsFunction expects a dict or ClsDict with only '
                             'callables as values.')
-
-        self.body = body
-        if not isinstance(body, ClsDict):
-            self.body = ClsDict(body)
 
     def understands(self, item: Any) -> bool:
         """

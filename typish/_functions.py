@@ -200,8 +200,11 @@ def is_type_annotation(item: typing.Any) -> bool:
     :return: ``True`` is ``item`` is a type annotation.
     """
     # Use _GenericAlias for Python 3.7+ and use GenericMeta for the rest.
-    super_cls = getattr(typing, '_GenericAlias', getattr(typing, 'GenericMeta', None))
-    return instance_of(item, type) or instance_of(item, super_cls)
+    super_cls = getattr(typing, '_GenericAlias',
+                        getattr(typing, 'GenericMeta', None))
+    return (item is typing.Any
+            or instance_of(item, type)
+            or instance_of(item, super_cls))
 
 
 def _subclass_of_generic(

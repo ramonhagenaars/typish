@@ -15,6 +15,12 @@ requirements = []
 
 test_requirements = [
     'numpy',
+    'pycodestyle',
+    'pylint',
+    'mypy',
+    'pytest',
+    'coverage',
+    'codecov',
 ]
 
 extras = {

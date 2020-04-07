@@ -37,6 +37,40 @@ class TestClsFunction(TestCase):
         self.assertEqual(4, function(2))
         self.assertEqual('2_', function('2'))
 
+    def test_with_callables(self):
+
+        def f1(x: int):
+            return 1
+
+        class C:
+            def m1(self, x: str):
+                return 2
+
+            @classmethod
+            def m2(cls, x: float):
+                return 3
+
+            @staticmethod
+            def m3(x: list):
+                return 4
+
+        def f2(x):  # No type hint
+            return 5
+
+        function = ClsFunction([f1, C().m1, C.m2, C.m3, f2])
+        self.assertEqual(1, function(42))
+        self.assertEqual(2, function('hello'))
+        self.assertEqual(3, function(42.0))
+        self.assertEqual(4, function([42]))
+        self.assertEqual(5, function({}))
+
+    def test_with_invalid_callables(self):
+        def f():
+            ...
+
+        with self.assertRaises(TypeError):
+            ClsFunction([f])
+
     def test_multiple_args(self):
         function = ClsFunction({
             int: lambda x, y: x * y,
