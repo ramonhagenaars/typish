@@ -113,10 +113,15 @@ def get_type(inst: T, use_union: bool = False) -> typing.Type[T]:
         (type, lambda inst_, _: typing.Type[inst]),
     ]
 
-    for super_type, func in super_types:
-        if isinstance(inst, super_type):
-            result = func(inst, use_union)
-            break
+    try:
+        for super_type, func in super_types:
+            if isinstance(inst, super_type):
+                result = func(inst, use_union)
+                break
+    except Exception:
+        # If anything went wrong, return the regular type.
+        # This is to support 3rd party libraries.
+        return type(inst)
     return result
 
 
