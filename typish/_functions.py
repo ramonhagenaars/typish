@@ -43,6 +43,11 @@ def instance_of(obj: object, *args: type) -> bool:
     :param args: the type(s) of which ``obj`` is an instance or not.
     :return: ``True`` if ``obj`` is an instance of all types in ``args``.
     """
+    try:
+        return all(isinstance(obj, arg) for arg in args)
+    except Exception:
+        ...  # If the regular check didn't work, continue below.
+
     if args and _is_literal(args[0]):
         return _check_literal(obj, instance_of, *args)
 

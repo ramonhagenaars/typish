@@ -302,6 +302,9 @@ class _LiteralMeta(SubscriptableType):
             result = SubscriptableType.__getattribute__(cls, item)
         return result
 
+    def __instancecheck__(self, instance):
+        return self.__args__ and self.__args__[0] == instance
+
 
 class Literal(metaclass=_LiteralMeta):
     """

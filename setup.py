@@ -15,6 +15,7 @@ requirements = []
 
 test_requirements = [
     'numpy',
+    'nptyping',
     'pycodestyle',
     'pylint',
     'mypy',

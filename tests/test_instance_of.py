@@ -1,6 +1,9 @@
 from typing import List, Dict, Union, Optional, Callable, Any, Tuple, Type, Iterable
 from unittest import TestCase
 
+import nptyping as nptyping
+import numpy
+
 from typish import Literal
 from typish._functions import instance_of
 
@@ -96,3 +99,12 @@ class TestInstanceOf(TestCase):
         self.assertTrue(not instance_of(42, Literal))
         self.assertTrue(instance_of(Any, Literal[Any]))
         self.assertTrue(not instance_of(42, Literal[Any]))
+
+    def test_instance_of_numpy(self):
+        self.assertTrue(instance_of(numpy.array([1, 2, 3]), numpy.ndarray))
+
+    def test_instance_of_nptyping_ndarray(self):
+        arr = numpy.array([1, 2, 3])
+        arr_type = nptyping.NDArray[(3,), int]
+
+        self.assertTrue(instance_of(arr, arr_type))
