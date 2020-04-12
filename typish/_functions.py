@@ -94,6 +94,15 @@ def get_alias(cls: T) -> typing.Optional[T]:
     return _alias_per_type.get(cls.__name__, None)
 
 
+class _UnionType(type):
+    def __instancecheck__(self, instance):
+        return str(instance).startswith('typing.Union')
+
+
+class UnionType(type, metaclass=_UnionType):
+    ...
+
+
 def get_type(inst: T, use_union: bool = False) -> typing.Type[T]:
     """
     Return a type, complete with generics for the given ``inst``.
@@ -104,8 +113,9 @@ def get_type(inst: T, use_union: bool = False) -> typing.Type[T]:
     if inst is typing.Any:
         return typing.Any
 
-    if str(inst).startswith('typing.Union'):
-        return getattr(typing, '_GenericAlias', getattr(typing, 'GenericMeta', type))
+    if isinstance(inst, UnionType):
+        return UnionType
+        # return getattr(typing, '_GenericAlias', getattr(typing, 'GenericMeta', type))
 
     result = type(inst)
     super_types = [
@@ -209,7 +219,8 @@ def is_type_annotation(item: typing.Any) -> bool:
                         getattr(typing, 'GenericMeta', None))
     return (item is typing.Any
             or instance_of(item, type)
-            or instance_of(item, super_cls))
+            or instance_of(item, super_cls)
+            or isinstance(item, UnionType))
 
 
 def _subclass_of_generic(

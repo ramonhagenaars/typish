@@ -1,6 +1,6 @@
 import os
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 here = os.path.abspath(os.path.dirname(__file__))
 meta_info = {}
@@ -39,9 +39,7 @@ setup(
     license=meta_info['__license__'],
     long_description=long_description,
     long_description_content_type='text/markdown',
-    packages=[
-        'typish',
-    ],
+    packages=find_packages(exclude=('tests', 'test_resources')),
     install_requires=requirements,
     tests_require=test_requirements,
     extras_require=extras,
