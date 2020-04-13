@@ -86,7 +86,8 @@ class TestSubclassOf(TestCase):
             self.assertTrue(not subclass_of(Union[A, B], C))
             self.assertTrue(not subclass_of(Union[A, B], Union[C, D]))
 
-    def test_instance_of_literal(self):
+    def test_subclass_of_literal(self):
         self.assertTrue(subclass_of(int, Literal[int]))
         self.assertTrue(subclass_of(Any, Literal[Any]))
         self.assertTrue(not subclass_of(int, Literal[Any]))
+        self.assertTrue(not subclass_of(int, Literal))
