@@ -135,5 +135,7 @@ def _check_literal(obj: object, func: typing.Callable, *args: type) -> bool:
     literal = args[0]
     leftovers = args[1:]
     literal_args = getattr(literal, '__args__', None)
-    literal_arg = literal_args[0]
-    return obj == literal_arg and (not leftovers or func(obj, *leftovers))
+    if literal_args:
+        literal_arg = literal_args[0]
+        return obj == literal_arg and (not leftovers or func(obj, *leftovers))
+    return False
