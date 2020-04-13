@@ -35,11 +35,11 @@ class _LiteralMeta(SubscriptableType):
         return get_simple_name(subclass) == 'Literal'
 
 
-class _Literal(type, metaclass=_LiteralMeta):
+class LiteralAlias(type, metaclass=_LiteralMeta):
     """
     This is a backwards compatible variant of typing.Literal (Python 3.8+).
     """
 
 
 # If Literal is available (Python 3.8+), then return that type instead.
-Literal = getattr(typing, 'Literal', _Literal)
+Literal = getattr(typing, 'Literal', LiteralAlias)

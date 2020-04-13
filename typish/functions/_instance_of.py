@@ -1,6 +1,3 @@
-import typing
-
-
 def instance_of(obj: object, *args: type) -> bool:
     """
     Check whether ``obj`` is an instance of all types in ``args``, while also
@@ -9,7 +6,7 @@ def instance_of(obj: object, *args: type) -> bool:
     :param args: the type(s) of which ``obj`` is an instance or not.
     :return: ``True`` if ``obj`` is an instance of all types in ``args``.
     """
-    from typish.classes._literal import Literal
+    from typish.classes._literal import Literal, LiteralAlias
     from typish.functions._subclass_of import subclass_of
     from typish.functions._get_type import get_type
 
@@ -19,18 +16,9 @@ def instance_of(obj: object, *args: type) -> bool:
         ...  # If the regular check didn't work, continue below.
 
     if args and issubclass(args[0], Literal):
-        return _check_literal(obj, instance_of, *args)
+        leftovers = args[1:]
+        return (LiteralAlias.__instancecheck__(args[0], obj)
+                and (not leftovers or instance_of(obj, leftovers)))
 
     type_ = get_type(obj, use_union=True)
     return subclass_of(type_, *args)
-
-
-def _check_literal(obj: object, func: typing.Callable, *args: type) -> bool:  # TODO refactor
-    # Instance or subclass check for Literal.
-    literal = args[0]
-    leftovers = args[1:]
-    literal_args = getattr(literal, '__args__', None)
-    if literal_args:
-        literal_arg = literal_args[0]
-        return obj == literal_arg and (not leftovers or func(obj, *leftovers))
-    return False

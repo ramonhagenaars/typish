@@ -1,6 +1,6 @@
 import inspect
 from collections import OrderedDict
-from typing import Callable, Any, Union, Iterable
+from typing import Callable, Any, Union, Iterable, Dict, Tuple
 
 from typish._types import Empty
 from typish.classes._cls_dict import ClsDict
@@ -12,7 +12,10 @@ class ClsFunction:
     the first argument to check for the right function in its body, executes it
     and returns the result.
     """
-    def __init__(self, body: Union[ClsDict, dict, Iterable[Callable]]):
+    def __init__(self, body: Union[ClsDict,
+                                   Dict[type, Callable],
+                                   Iterable[Tuple[type, Callable]],
+                                   Iterable[Callable]]):
         from typish.functions._instance_of import instance_of
 
         if isinstance(body, ClsDict):
@@ -33,6 +36,8 @@ class ClsFunction:
                 key = Any if hint == Empty else hint
                 list_of_tuples.append((key, func))
             self.body = ClsDict(OrderedDict(list_of_tuples))
+        elif instance_of(body, Iterable[Tuple[type, Callable]]):
+            self.body = ClsDict(OrderedDict(body))
         else:
             raise TypeError('ClsFunction expects a ClsDict or a dict that can '
                             'be turned to a ClsDict or an iterable of '

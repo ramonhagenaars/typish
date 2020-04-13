@@ -36,6 +36,23 @@ class TestClsFunction(TestCase):
         self.assertEqual(4, function(2))
         self.assertEqual('2_', function('2'))
 
+    def test_with_iterable_of_tuples(self):
+        body = (
+            (int, lambda x: x * 2),
+            (str, lambda x: '{}_'.format(x)),
+        )
+
+        function_tuple = ClsFunction(body)
+        function_set = ClsFunction(set(body))
+        function_list = ClsFunction(list(body))
+
+        self.assertEqual(4, function_tuple(2))
+        self.assertEqual('2_', function_tuple('2'))
+        self.assertEqual(4, function_set(2))
+        self.assertEqual('2_', function_set('2'))
+        self.assertEqual(4, function_list(2))
+        self.assertEqual('2_', function_list('2'))
+
     def test_with_callables(self):
 
         def f1(x: int):

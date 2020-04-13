@@ -13,6 +13,7 @@ def get_type(inst: T, use_union: bool = False) -> typing.Type[T]:
     :param use_union: if ``True``, the resulting type can contain a union.
     :return: the type of ``inst``.
     """
+
     if inst is typing.Any:
         return typing.Any
 
@@ -30,6 +31,8 @@ def get_type(inst: T, use_union: bool = False) -> typing.Type[T]:
         (types.MethodType, _get_type_callable),
         (type, lambda inst_, _: typing.Type[inst]),
     ]
+
+    # ClsFunction()
 
     try:
         for super_type, func in super_types:

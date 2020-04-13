@@ -53,6 +53,8 @@ class TestSubclassOf(TestCase):
         self.assertTrue(subclass_of(Tuple[int, ...], Iterable[int]))
         self.assertTrue(subclass_of(Tuple[B, C, D], Iterable[B]))
         self.assertTrue(subclass_of(Tuple[B, C, D], Iterable[A]))
+        self.assertTrue(subclass_of(List[Tuple[int, str]], Iterable[Tuple[int, str]]))
+        self.assertTrue(subclass_of(Tuple[Tuple[int, str]], Iterable[Tuple[int, str]]))
 
     def test_subclass_of_multiple(self):
         self.assertTrue(subclass_of(F, A))

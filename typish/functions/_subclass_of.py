@@ -67,12 +67,12 @@ def _subclass_of_generic(
         cls: type,
         info_generic_type: type,
         info_args: typing.Tuple[type, ...]) -> bool:
-    from typish.functions._get_origin import get_origin
-    from typish.functions._get_args import get_args
-    from typish.functions._common_ancestor import common_ancestor_of_types
-
     # Check if cls is a subtype of info_generic_type, knowing that the latter
     # is a generic type.
+
+    from typish.functions._get_origin import get_origin
+    from typish.functions._get_args import get_args
+
     result = False
 
     cls_origin = get_origin(cls)
@@ -83,12 +83,13 @@ def _subclass_of_generic(
                   and _subclass_of_tuple(cls_args, info_args))
     elif cls_origin is tuple and info_generic_type is typing.Iterable:
         # Another special case.
-        args = get_args(cls)
+        args = cls_args
         if len(args) > 1 and args[1] is ...:
             args = [args[0]]
-        ancestor = common_ancestor_of_types(*args)
-        result = subclass_of(typing.Iterable[ancestor],
-                             typing.Iterable[args[0]])
+
+        # Match the number of arguments of info to that of cls.
+        matched_info_args = info_args * len(args)
+        result = _subclass_of_tuple(args, matched_info_args)
     elif info_generic_type is typing.Union:
         # Another special case.
         result = _subclass_of_union(cls, info_args)
@@ -129,7 +130,7 @@ def _subclass_of_tuple(
     return result
 
 
-def _check_literal(obj: object, func: typing.Callable, *args: type) -> bool:  # TODO refactor
+def _check_literal(obj: object, func: typing.Callable, *args: type) -> bool:
     # Instance or subclass check for Literal.
     literal = args[0]
     leftovers = args[1:]
