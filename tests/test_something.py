@@ -2,7 +2,7 @@ from typing import Callable, List, Set
 from unittest import TestCase
 
 from tests.resources import some_module
-from typish._classes import Something, TypingType
+from typish import Something, TypingType
 
 Inyerface = Something[{
     'a': int,

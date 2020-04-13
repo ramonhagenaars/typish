@@ -3,8 +3,7 @@ from unittest import TestCase
 
 import numpy
 
-from typish._functions import get_type, instance_of
-from typish._types import NoneType, Unknown
+from typish import get_type, instance_of, NoneType, Unknown
 
 
 class TestGetType(TestCase):

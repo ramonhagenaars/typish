@@ -13,7 +13,7 @@ from typing import (
 )
 from unittest import TestCase
 
-from typish._functions import get_origin, get_alias
+from typish import get_origin, get_alias
 
 
 class TestOriginAndAlias(TestCase):

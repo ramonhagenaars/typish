@@ -5,7 +5,7 @@ import nptyping as nptyping
 import numpy
 
 from typish import Literal
-from typish._functions import instance_of
+from typish import instance_of
 
 
 class A: pass

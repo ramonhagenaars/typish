@@ -1,8 +1,7 @@
 from typing import Tuple, Any, Union
 from unittest import TestCase
 
-from typish import ClsDict, EllipsisType, Literal
-from typish._classes import ClsFunction
+from typish import ClsDict, EllipsisType, Literal, ClsFunction
 
 
 class TestClsFunction(TestCase):

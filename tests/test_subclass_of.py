@@ -2,9 +2,7 @@ import sys
 from typing import List, Tuple, Union, Optional, Iterable, Any
 from unittest import TestCase
 
-from typish import Literal
-from typish._functions import subclass_of
-from typish._types import Unknown, NoneType
+from typish import Literal, subclass_of, Unknown, NoneType
 
 
 class A: pass

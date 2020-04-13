@@ -1,8 +1,7 @@
 from typing import Type
 from unittest import TestCase
 
-from typish._functions import common_ancestor, common_ancestor_of_types
-from typish._types import NoneType
+from typish import common_ancestor, common_ancestor_of_types, NoneType
 
 
 class A: pass
