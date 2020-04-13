@@ -3,6 +3,17 @@ import typing
 from typish.classes._subscriptable_type import SubscriptableType
 
 
+def is_literal_type(cls: typing.Any) -> bool:
+    """
+    Return whether cls is a Literal type.
+    :param cls: the type that is to be checked.
+    :return: True if cls is a Literal type.
+    """
+    from typish.functions._get_simple_name import get_simple_name
+
+    return get_simple_name(cls) == 'Literal'
+
+
 class _LiteralMeta(SubscriptableType):
     """
     A Metaclass that exists to serve Literal and alter the __args__ attribute.
@@ -29,16 +40,28 @@ class _LiteralMeta(SubscriptableType):
     def __instancecheck__(self, instance):
         return self.__args__ and self.__args__[0] == instance
 
-    def __subclasscheck__(self, subclass: typing.Any) -> bool:
-        from typish.functions._get_simple_name import get_simple_name
+    def __str__(self):
+        return '{}[{}]'.format(self.__name__, self.__args__[0])
 
-        return get_simple_name(subclass) == 'Literal'
+    def __subclasscheck__(self, subclass: typing.Any) -> bool:
+        return is_literal_type(subclass)
 
 
 class LiteralAlias(type, metaclass=_LiteralMeta):
     """
     This is a backwards compatible variant of typing.Literal (Python 3.8+).
     """
+    @staticmethod
+    def from_literal(literal: typing.Any) -> typing.Type['LiteralAlias']:
+        """
+        Create a LiteralAlias from the given typing.Literal.
+        :param literal: the typing.Literal type.
+        :return: a LiteralAlias type.
+        """
+        from typish.functions._get_args import get_args
+
+        args = get_args(literal)
+        return LiteralAlias[args[0]] if args else LiteralAlias
 
 
 # If Literal is available (Python 3.8+), then return that type instead.

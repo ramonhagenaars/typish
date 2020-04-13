@@ -6,7 +6,7 @@ def instance_of(obj: object, *args: type) -> bool:
     :param args: the type(s) of which ``obj`` is an instance or not.
     :return: ``True`` if ``obj`` is an instance of all types in ``args``.
     """
-    from typish.classes._literal import Literal, LiteralAlias
+    from typish.classes._literal import LiteralAlias, is_literal_type
     from typish.functions._subclass_of import subclass_of
     from typish.functions._get_type import get_type
 
@@ -15,9 +15,10 @@ def instance_of(obj: object, *args: type) -> bool:
     except Exception:
         ...  # If the regular check didn't work, continue below.
 
-    if args and issubclass(args[0], Literal):
+    if args and is_literal_type(args[0]):
+        alias = LiteralAlias.from_literal(args[0])
         leftovers = args[1:]
-        return (LiteralAlias.__instancecheck__(args[0], obj)
+        return (isinstance(obj, alias)
                 and (not leftovers or instance_of(obj, leftovers)))
 
     type_ = get_type(obj, use_union=True)
