@@ -4,8 +4,7 @@ from unittest import TestCase
 import nptyping as nptyping
 import numpy
 
-from typish import Literal
-from typish import instance_of
+from typish import Literal, instance_of
 
 
 class A: pass
@@ -99,6 +98,19 @@ class TestInstanceOf(TestCase):
         self.assertTrue(not instance_of(42, Literal))
         self.assertTrue(instance_of(Any, Literal[Any]))
         self.assertTrue(not instance_of(42, Literal[Any]))
+
+    def test_instance_of_typing_literal(self):
+        # This is to mock Python 3.8 Literal.
+        class LiteralMockMeta(type):
+            __name__ = 'Literal'
+
+            def __instancecheck__(self, instance):
+                raise Exception('typing.Literal does not allow instance checks.')
+
+        class LiteralMock(metaclass=LiteralMockMeta):
+            __args__ = (42,)
+
+        self.assertTrue(instance_of(42, LiteralMock))
 
     def test_instance_of_numpy(self):
         self.assertTrue(instance_of(numpy.array([1, 2, 3]), numpy.ndarray))

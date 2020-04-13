@@ -1,3 +1,4 @@
+from typish._meta import __version__
 from typish._types import (
     T,
     KT,
@@ -11,7 +12,7 @@ from typish._types import (
 )
 from typish.classes._cls_dict import ClsDict
 from typish.classes._cls_function import ClsFunction
-from typish.classes._literal import Literal, is_literal_type
+from typish.classes._literal import Literal, LiteralAlias, is_literal_type
 from typish.classes._something import Something, TypingType
 from typish.classes._subscriptable_type import SubscriptableType
 from typish.classes._union_type import UnionType
