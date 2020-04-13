@@ -121,4 +121,4 @@ class Something(type, metaclass=_SomethingMeta):
         return Something[signature]
 
 
-TypingType = Something['__origin__': type, '__args__': Tuple[type, ...]]  # TODO refactor
+TypingType = Something['__origin__': type, '__args__': Tuple[type, ...]]
