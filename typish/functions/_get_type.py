@@ -19,7 +19,6 @@ def get_type(inst: T, use_union: bool = False) -> typing.Type[T]:
 
     if isinstance(inst, UnionType):
         return UnionType
-        # return getattr(typing, '_GenericAlias', getattr(typing, 'GenericMeta', type))
 
     result = type(inst)
     super_types = [
@@ -31,8 +30,6 @@ def get_type(inst: T, use_union: bool = False) -> typing.Type[T]:
         (types.MethodType, _get_type_callable),
         (type, lambda inst_, _: typing.Type[inst]),
     ]
-
-    # ClsFunction()
 
     try:
         for super_type, func in super_types:
