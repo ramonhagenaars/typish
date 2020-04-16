@@ -2,6 +2,7 @@
 [![Downloads](https://pepy.tech/badge/typish)](https://pepy.tech/project/typish)
 [![Pypi version](https://badge.fury.io/py/typish.svg)](https://badge.fury.io/py/typish)
 [![codecov](https://codecov.io/gh/ramonhagenaars/typish/branch/master/graph/badge.svg)](https://codecov.io/gh/ramonhagenaars/typish)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/ramonhagenaars/typish/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/ramonhagenaars/typish/?branch=master)
 
 # Typish
 
