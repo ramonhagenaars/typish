@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from typish._classes import SubscriptableType
+from typish import SubscriptableType
 
 
 class TestSubscriptableType(TestCase):

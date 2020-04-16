@@ -2,9 +2,7 @@ import sys
 from typing import List, Tuple, Union, Optional, Iterable, Any
 from unittest import TestCase
 
-from typish import Literal
-from typish._functions import subclass_of
-from typish._types import Unknown, NoneType
+from typish import Literal, subclass_of, Unknown, NoneType
 
 
 class A: pass
@@ -55,6 +53,8 @@ class TestSubclassOf(TestCase):
         self.assertTrue(subclass_of(Tuple[int, ...], Iterable[int]))
         self.assertTrue(subclass_of(Tuple[B, C, D], Iterable[B]))
         self.assertTrue(subclass_of(Tuple[B, C, D], Iterable[A]))
+        self.assertTrue(subclass_of(List[Tuple[int, str]], Iterable[Tuple[int, str]]))
+        self.assertTrue(subclass_of(Tuple[Tuple[int, str]], Iterable[Tuple[int, str]]))
 
     def test_subclass_of_multiple(self):
         self.assertTrue(subclass_of(F, A))
@@ -86,7 +86,8 @@ class TestSubclassOf(TestCase):
             self.assertTrue(not subclass_of(Union[A, B], C))
             self.assertTrue(not subclass_of(Union[A, B], Union[C, D]))
 
-    def test_instance_of_literal(self):
+    def test_subclass_of_literal(self):
         self.assertTrue(subclass_of(int, Literal[int]))
         self.assertTrue(subclass_of(Any, Literal[Any]))
         self.assertTrue(not subclass_of(int, Literal[Any]))
+        self.assertTrue(not subclass_of(int, Literal))
