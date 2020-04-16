@@ -55,7 +55,7 @@ pip install typish
 | ``Unknown`` | The type of something unknown.
 | ``Module`` | The type of a module.
 | ``NoneType`` | The type of ``None``.
-| ``Ellipsis_`` | The type of ``...``.
+| ``EllipsisType`` | The type of ``...``.
 
 ### Classes
 
