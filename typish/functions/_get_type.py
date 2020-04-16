@@ -22,7 +22,7 @@ def get_type(inst: T, use_union: bool = False) -> typing.Type[T]:
         # return getattr(typing, '_GenericAlias', getattr(typing, 'GenericMeta', type))
 
     result = type(inst)
-    super_types = [  # TODO refactor
+    super_types = [
         (dict, _get_type_dict),
         (tuple, _get_type_tuple),
         (str, lambda inst_, _: result),
