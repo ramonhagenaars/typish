@@ -57,6 +57,27 @@ pip install typish
 | ``NoneType`` | The type of ``None``.
 | ``EllipsisType`` | The type of ``...``.
 
+### Decorators
+
+#### hintable
+This decorator allows one to capture the type hint of a variable that calls a function. If no hint is provided, `None` 
+is passed as a value for `hint`.
+
+```python
+@hintable
+def cast(arg: Any, hint: Type[T]) -> T:
+    return hint(arg)
+
+# The type hint on x is passed to cast:
+x: int = cast('42')
+
+# It works with MyPy hints as well:
+y = cast('42')  # type: int
+
+# Not something you would normally do, but the type hint takes precedence:
+z: int = cast('42')  # type: str
+```
+
 ### Classes
 
 #### SubscriptableType
