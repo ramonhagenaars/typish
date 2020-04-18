@@ -20,6 +20,11 @@ def some_func(hint: Type[T]) -> Type[T]:
     return hint
 
 
+@hintable(param='cls')
+def some_func_with_custom_param_name(cls):
+    return cls
+
+
 class SomeClass:
     @hintable
     def some_method(self, hint):
@@ -47,6 +52,25 @@ class TestHintable(TestCase):
         self.assertEqual(42, x)
         self.assertEqual('42', y)
         self.assertEqual('42', z)
+
+    def test_hintable_with_parentheses(self):
+        # Test that hintable can be used with parentheses as well.
+
+        @hintable()  # Note the parentheses.
+        def some_function(hint):
+            return hint
+
+        x: int = some_function()
+
+        self.assertEqual(int, x)
+
+    def test_hintable_with_custom_param_name(self):
+        # Test that functions can customize the parameter name that receives
+        # the type hint.
+
+        x: int = some_func_with_custom_param_name()
+
+        self.assertEqual(int, x)
 
     def test_hintable_method(self):
         # Test that methods can be hintable as well.
@@ -126,3 +150,12 @@ class TestHintable(TestCase):
             @hintable
             def some_flawed_func():
                 ...
+
+    def test_hintable_with_flawed_custom_param_name(self):
+        # Test that when a custom param name is used, it is checked if a
+        # parameter with that name is accepted by the decorated function.
+
+        with self.assertRaises(TypeError):
+            @hintable(param='cls')
+            def some_func_with_flawed_custom_param_name(hint):
+                return hint
