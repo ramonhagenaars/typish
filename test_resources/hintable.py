@@ -122,3 +122,44 @@ class TestHintable(TestCase):
 
         self.assertEqual(int, x)
         self.assertEqual(str, y)
+
+    def test_as_parameter_in_a_function(self):
+        # Test that a hintable function should also work as default argument.
+
+        def func_with_default(arg1: int = some_func(), arg2: float = some_func(), arg3: str = some_func()):
+            return arg1, arg2, arg3
+
+        x, y, z = func_with_default()
+        x2, y2, z2 = func_with_default()
+        x3, y3, z3 = func_with_default()
+
+        self.assertEqual(int, x)
+        self.assertEqual(float, y)
+        self.assertEqual(str, z)
+        self.assertEqual(int, x2)
+        self.assertEqual(float, y2)
+        self.assertEqual(str, z2)
+        self.assertEqual(int, x3)
+        self.assertEqual(float, y3)
+        self.assertEqual(str, z3)
+
+    def test_multiple_on_a_line(self):
+        # Test that multiple hintable calls on a line work.
+
+        # Yes, this IS valid Python. No it is NOT recommended!
+        x: int = some_func(); y: str = some_func()
+
+        self.assertEqual(int, x)
+        self.assertEqual(str, y)
+
+    def test_multiline_wont_break(self):
+        # Test that multiline code at least doesnt break
+
+        # This is just too crazy. If you write code like this, you're on your
+        # own.
+        x: \
+            int \
+            = \
+            some_func()
+
+        self.assertEqual(None, x)

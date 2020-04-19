@@ -63,6 +63,9 @@ pip install typish
 This decorator allows one to capture the type hint of a variable that calls a function. If no hint is provided, `None` 
 is passed as a value for `hint`.
 
+Just remember: with great power comes great responsibility. Use this functionality wisely. You may want to make sure 
+that if you hinted a variable with a certain type, your `hintable` function does indeed return a value of that type.
+
 ```python
 @hintable
 def cast(arg: Any, hint: Type[T]) -> T:
