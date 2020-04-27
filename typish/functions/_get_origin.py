@@ -1,5 +1,6 @@
 import typing
-from collections import deque, defaultdict, Set
+from collections import deque, defaultdict
+from collections.abc import Set
 
 
 def get_origin(t: type) -> type:
