@@ -1,4 +1,5 @@
 from unittest import TestCase
+
 from typish import __version__
 
 
