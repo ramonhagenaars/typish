@@ -7,6 +7,9 @@ def subclass_of(cls: type, *args: type) -> bool:
     """
     Return whether ``cls`` is a subclass of all types in ``args`` while also
     considering generics.
+
+    If you want the subclass check to be customized for your type, then make
+    sure it has a __subclasscheck__ defined (not in a base class).
     :param cls: the subject.
     :param args: the super types.
     :return: True if ``cls`` is a subclass of all types in ``args`` while also
@@ -19,6 +22,7 @@ def _subclass_of(cls: type, clsinfo: type) -> bool:
     # Check whether cls is a subtype of clsinfo.
     from typish.functions._get_origin import get_origin
     from typish.functions._get_args import get_args
+    from typish.functions._is_from_typing import is_from_typing
     from typish.classes._literal import LiteralAlias
 
     if cls == clsinfo:
@@ -26,6 +30,10 @@ def _subclass_of(cls: type, clsinfo: type) -> bool:
 
     if issubclass(clsinfo, LiteralAlias):
         return _check_literal(cls, subclass_of, clsinfo)
+
+    if (not is_from_typing(clsinfo) and isinstance(cls, type)
+            and '__subclasscheck__' in dir(clsinfo)):
+        return issubclass(cls, clsinfo)
 
     clsinfo_origin = get_origin(clsinfo)
     clsinfo_args = get_args(clsinfo)
