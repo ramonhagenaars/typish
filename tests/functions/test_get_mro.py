@@ -27,3 +27,7 @@ class TestGetMRO(TestCase):
         expected = (typing.Union, super_cls, object)
 
         self.assertTupleEqual(expected, mro_u)
+
+    def test_get_mro_object(self):
+        mro_b = get_mro(B())
+        self.assertTupleEqual((B, A, object), mro_b)
