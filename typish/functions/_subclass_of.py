@@ -31,7 +31,9 @@ def _subclass_of(cls: type, clsinfo: type) -> bool:
     if issubclass(clsinfo, LiteralAlias):
         return _check_literal(cls, subclass_of, clsinfo)
 
-    if (not is_from_typing(clsinfo) and isinstance(cls, type)
+    if (not is_from_typing(clsinfo)
+            and isinstance(cls, type)
+            and clsinfo is not type
             and '__subclasscheck__' in dir(clsinfo)):
         return issubclass(cls, clsinfo)
 
