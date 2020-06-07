@@ -20,52 +20,41 @@ def subclass_of(cls: type, *args: type) -> bool:
 
 def _subclass_of(cls: type, clsinfo: type) -> bool:
     # Check whether cls is a subtype of clsinfo.
-    from typish.functions._get_origin import get_origin
-    from typish.functions._get_args import get_args
-    from typish.functions._is_from_typing import is_from_typing
     from typish.classes._literal import LiteralAlias
 
-    if cls == clsinfo:
-        return True
-
-    if issubclass(clsinfo, LiteralAlias):
+    if _is_true_case(cls, clsinfo):
+        result = True
+    elif issubclass(clsinfo, LiteralAlias):
         return _check_literal(cls, subclass_of, clsinfo)
+    elif is_issubclass_case(cls, clsinfo):
+        result = issubclass(cls, clsinfo)
+    else:
+        result = _forward_subclass_check(cls, clsinfo)
 
-    if (not is_from_typing(clsinfo)
-            and isinstance(cls, type)
-            and clsinfo is not type
-            and '__subclasscheck__' in dir(clsinfo)):
-        return issubclass(cls, clsinfo)
+    return result
+
+
+def _forward_subclass_check(cls: type, clsinfo: type) -> bool:
+    # Forward the subclass check for cls and clsinfo to delegates that know how
+    # to check that particulat cls/clsinfo type.
+
+    from typish.functions._get_origin import get_origin
+    from typish.functions._get_args import get_args
 
     clsinfo_origin = get_origin(clsinfo)
     clsinfo_args = get_args(clsinfo)
     cls_origin = get_origin(cls)
-    if cls is Unknown or clsinfo in (typing.Any, object):
-        result = True
-    elif cls_origin is typing.Union:
+
+    if cls_origin is typing.Union:
         # cls is a Union; all options of that Union must subclass clsinfo.
         cls_args = get_args(cls)
         result = all([subclass_of(elem, clsinfo) for elem in cls_args])
     elif clsinfo_args:
         result = _subclass_of_generic(cls, clsinfo_origin, clsinfo_args)
     else:
-        try:
-            result = issubclass(cls_origin, clsinfo_origin)
-        except TypeError:
-            result = False
-    return result
-
-
-def _subclass_of_union(
-        cls: type,
-        info_args: typing.Tuple[type, ...]) -> bool:
-    # Handle subclass_of(*, union)
-    result = True
-    for cls_ in info_args:
-        if subclass_of(cls, cls_):
-            break
-    else:
-        result = False
+        result = (isinstance(cls_origin, type)
+                  and isinstance(clsinfo_origin, type)
+                  and issubclass(cls_origin, clsinfo_origin))
     return result
 
 
@@ -98,15 +87,10 @@ def _subclass_of_generic(
         result = _subclass_of_tuple(args, matched_info_args)
     elif info_generic_type is typing.Union:
         # Another special case.
-        result = _subclass_of_union(cls, info_args)
+        result = any(subclass_of(cls, cls_) for cls_ in info_args)
     elif (subclass_of(cls_origin, info_generic_type) and cls_args
             and len(cls_args) == len(info_args)):
-        for tup in zip(cls_args, info_args):
-            if not subclass_of(*tup):
-                result = False
-                break
-        else:
-            result = True
+        result = all(subclass_of(*tup) for tup in zip(cls_args, info_args))
     # Note that issubtype(list, List[...]) is always False.
     # Note that the number of arguments must be equal.
     return result
@@ -128,11 +112,8 @@ def _subclass_of_tuple(
         else:
             result = subclass_of(common_ancestor_of_types(*cls_args), info_args[0])
     elif len(cls_args) == len(info_args):
-        for c1, c2 in zip(cls_args, info_args):
-            if not subclass_of(c1, c2):
-                break
-        else:
-            result = True
+        result = all(subclass_of(c1, c2)
+                     for c1, c2 in zip(cls_args, info_args))
     return result
 
 
@@ -141,7 +122,26 @@ def _check_literal(obj: object, func: typing.Callable, *args: type) -> bool:
     literal = args[0]
     leftovers = args[1:]
     literal_args = getattr(literal, '__args__', None)
+    result = False
     if literal_args:
         literal_arg = literal_args[0]
-        return obj == literal_arg and (not leftovers or func(obj, *leftovers))
-    return False
+        result = (obj == literal_arg
+                  and (not leftovers or func(obj, *leftovers)))
+    return result
+
+
+def _is_true_case(cls: type, clsinfo: type) -> bool:
+    # Return whether subclass_of(cls, clsinfo) holds a case that must always be
+    # True, without the need of further checking.
+    return cls == clsinfo or cls is Unknown or clsinfo in (typing.Any, object)
+
+
+def is_issubclass_case(cls: type, clsinfo: type) -> bool:
+    # Return whether subclass_of(cls, clsinfo) holds a case that can be handled
+    # by the builtin issubclass.
+    from typish.functions._is_from_typing import is_from_typing
+
+    return (not is_from_typing(clsinfo)
+            and isinstance(cls, type)
+            and clsinfo is not type
+            and '__subclasscheck__' in dir(clsinfo))

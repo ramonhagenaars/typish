@@ -4,8 +4,7 @@ from unittest import TestCase
 import nptyping as nptyping
 import numpy
 
-from typish import Literal, instance_of
-from typish._state import State
+from typish import Literal, instance_of, State, register_get_type
 
 
 class A: pass
@@ -119,7 +118,7 @@ class TestInstanceOf(TestCase):
 
     def test_instance_of_nptyping_ndarray(self):
         local_state = State()
-        local_state.register_get_type(numpy.ndarray, nptyping.NDArray.type_of)
+        register_get_type(numpy.ndarray, nptyping.NDArray.type_of, local_state)
 
         arr = numpy.array([1, 2, 3])
         arr_type = nptyping.NDArray[(3,), int]
