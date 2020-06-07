@@ -52,9 +52,10 @@ def _forward_subclass_check(cls: type, clsinfo: type) -> bool:
     elif clsinfo_args:
         result = _subclass_of_generic(cls, clsinfo_origin, clsinfo_args)
     else:
-        result = (isinstance(cls_origin, type)
-                  and isinstance(clsinfo_origin, type)
-                  and issubclass(cls_origin, clsinfo_origin))
+        try:
+            result = issubclass(cls_origin, clsinfo_origin)
+        except TypeError:
+            result = False
     return result
 
 
