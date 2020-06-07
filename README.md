@@ -42,6 +42,8 @@ pip install typish
 | ``get_args_and_return_type(hint: typing.Type[typing.Callable]) -> typing.Tuple[typing.Optional[typing.Tuple[type]], typing.Optional[type]]`` | Get the argument types and the return type of a callable type hint (e.g. ``Callable[[int], str]``). 
 | ``get_type_hints_of_callable(func: typing.Callable) -> typing.Dict[str, type]`` | Return the type hints of the parameters of the given callable.
 | ``is_type_annotation(item: typing.Any) -> bool`` | Returns whether ``item`` is a ``type`` or a ``typing`` type.
+| ``is_from_typing(cls: type) -> bool`` | Returns whether ``cls`` is from the ``typing`` module.
+| ``get_mro(obj: typing.Any) -> typing.Tuple[type, ...]`` | Wrapper around ``getmro`` from ``inspect`` to also support ``typing`` types.
 
 
 ### Types

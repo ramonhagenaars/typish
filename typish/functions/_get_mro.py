@@ -11,7 +11,7 @@ def get_mro(obj: typing.Any) -> typing.Tuple[type, ...]:
     """
     from typish.functions._get_origin import get_origin
 
-    # Wrapper around ``getmro`` to allow types from ``Typing``.
+    # Wrapper around ``getmro`` to allow types from ``typing``.
     if obj is ...:
         return Ellipsis, object
     elif obj is typing.Union:
