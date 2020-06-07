@@ -70,25 +70,22 @@ def _subclass_of_generic(
     from typish.functions._get_args import get_args
 
     result = False
-
     cls_origin = get_origin(cls)
     cls_args = get_args(cls)
     if info_generic_type is tuple:
         # Special case.
         result = (subclass_of(cls_origin, tuple)
                   and _subclass_of_tuple(cls_args, info_args))
+    elif info_generic_type is typing.Union:
+        # Another special case.
+        result = any(subclass_of(cls, cls_) for cls_ in info_args)
     elif cls_origin is tuple and info_generic_type is typing.Iterable:
         # Another special case.
-        args = cls_args
-        if len(args) > 1 and args[1] is ...:
-            args = [args[0]]
+        args = _tuple_args(cls_args)
 
         # Match the number of arguments of info to that of cls.
         matched_info_args = info_args * len(args)
         result = _subclass_of_tuple(args, matched_info_args)
-    elif info_generic_type is typing.Union:
-        # Another special case.
-        result = any(subclass_of(cls, cls_) for cls_ in info_args)
     elif (subclass_of(cls_origin, info_generic_type) and cls_args
             and len(cls_args) == len(info_args)):
         result = all(subclass_of(*tup) for tup in zip(cls_args, info_args))
@@ -146,3 +143,12 @@ def is_issubclass_case(cls: type, clsinfo: type) -> bool:
             and isinstance(cls, type)
             and clsinfo is not type
             and '__subclasscheck__' in dir(clsinfo))
+
+
+def _tuple_args(
+        cls_args: typing.Iterable[typing.Any]) -> typing.Iterable[type]:
+    # Get the argument types from a tuple, even if the form is Tuple[int, ...].
+    result = cls_args
+    if len(cls_args) > 1 and cls_args[1] is ...:
+        result = [cls_args[0]]
+    return result
