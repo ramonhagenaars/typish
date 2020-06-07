@@ -2,17 +2,27 @@ import inspect
 import types
 import typing
 
+from typish._state import DEFAULT, State
 from typish._types import T, Unknown, KT, NoneType, Empty, VT
 from typish.classes._union_type import UnionType
 
 
-def get_type(inst: T, use_union: bool = False) -> typing.Type[T]:
+def get_type(
+        inst: T,
+        use_union: bool = False,
+        *,
+        state: State = DEFAULT) -> typing.Type[T]:
     """
     Return a type, complete with generics for the given ``inst``.
     :param inst: the instance for which a type is to be returned.
     :param use_union: if ``True``, the resulting type can contain a union.
+    :param state: any state that is used by typish.
     :return: the type of ``inst``.
     """
+
+    get_type_for_inst = state.get_type_per_cls.get(type(inst))
+    if get_type_for_inst:
+        return get_type_for_inst(inst)
 
     if inst is typing.Any:
         return typing.Any
@@ -24,17 +34,17 @@ def get_type(inst: T, use_union: bool = False) -> typing.Type[T]:
     super_types = [
         (dict, _get_type_dict),
         (tuple, _get_type_tuple),
-        (str, lambda inst_, _: result),
+        (str, lambda inst_, _, __: result),
         (typing.Iterable, _get_type_iterable),
         (types.FunctionType, _get_type_callable),
         (types.MethodType, _get_type_callable),
-        (type, lambda inst_, _: typing.Type[inst]),
+        (type, lambda inst_, _, __: typing.Type[inst]),
     ]
 
     try:
         for super_type, func in super_types:
             if isinstance(inst, super_type):
-                result = func(inst, use_union)
+                result = func(inst, use_union, state)
                 break
     except Exception:
         # If anything went wrong, return the regular type.
@@ -43,7 +53,10 @@ def get_type(inst: T, use_union: bool = False) -> typing.Type[T]:
     return result
 
 
-def _get_type_iterable(inst: typing.Iterable, use_union: bool):
+def _get_type_iterable(
+        inst: typing.Iterable,
+        use_union: bool,
+        state: State) -> type:
     from typish.functions._get_alias import get_alias
     from typish.functions._common_ancestor import common_ancestor
 
@@ -51,28 +64,32 @@ def _get_type_iterable(inst: typing.Iterable, use_union: bool):
     common_cls = Unknown
     if inst:
         if use_union:
-            types = [get_type(elem) for elem in inst]
+            types = [get_type(elem, state=state) for elem in inst]
             common_cls = typing.Union[tuple(types)]
         else:
             common_cls = common_ancestor(*inst)
             if typing_type:
                 if issubclass(common_cls, typing.Iterable) and typing_type is not str:
                     # Get to the bottom of it; obtain types recursively.
-                    common_cls = get_type(common_cls(_flatten(inst)))
+                    common_cls = get_type(common_cls(_flatten(inst)), state=state)
     result = typing_type[common_cls]
     return result
 
 
-def _get_type_tuple(inst: tuple, use_union: bool) -> typing.Dict[KT, VT]:
-    args = [get_type(elem) for elem in inst]
+def _get_type_tuple(
+        inst: tuple,
+        use_union: bool,
+        state: State) -> typing.Dict[KT, VT]:
+    args = [get_type(elem, state) for elem in inst]
     return typing.Tuple[tuple(args)]
 
 
 def _get_type_callable(
         inst: typing.Callable,
-        use_union: bool) -> typing.Type[typing.Dict[KT, VT]]:
+        use_union: bool,
+        state: State) -> typing.Type[typing.Dict[KT, VT]]:
     if 'lambda' in str(inst):
-        result = _get_type_lambda(inst, use_union)
+        result = _get_type_lambda(inst, use_union, state)
     else:
         result = typing.Callable
         sig = inspect.signature(inst)
@@ -90,18 +107,20 @@ def _get_type_callable(
 
 def _get_type_lambda(
         inst: typing.Callable,
-        use_union: bool) -> typing.Type[typing.Dict[KT, VT]]:
+        use_union: bool,
+        state: State) -> typing.Type[typing.Dict[KT, VT]]:
     args = [Unknown for _ in inspect.signature(inst).parameters]
     return_type = Unknown
     return typing.Callable[args, return_type]
 
 
 def _get_type_dict(inst: typing.Dict[KT, VT],
-                   use_union: bool) -> typing.Type[typing.Dict[KT, VT]]:
+                   use_union: bool,
+                   state: State) -> typing.Type[typing.Dict[KT, VT]]:
     from typish.functions._get_args import get_args
 
-    t_list_k = _get_type_iterable(list(inst.keys()), use_union)
-    t_list_v = _get_type_iterable(list(inst.values()), use_union)
+    t_list_k = _get_type_iterable(list(inst.keys()), use_union, state)
+    t_list_v = _get_type_iterable(list(inst.values()), use_union, state)
     t_k_tuple = get_args(t_list_k)
     t_v_tuple = get_args(t_list_v)
     return typing.Dict[t_k_tuple[0], t_v_tuple[0]]

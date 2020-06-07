@@ -1,7 +1,7 @@
 from typing import Callable, List, Set
 from unittest import TestCase
 
-from tests.resources import some_module
+from test_resources import some_module
 from typish import Something, TypingType
 
 Inyerface = Something[{

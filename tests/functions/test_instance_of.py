@@ -4,7 +4,7 @@ from unittest import TestCase
 import nptyping as nptyping
 import numpy
 
-from typish import Literal, instance_of
+from typish import Literal, instance_of, State, register_get_type
 
 
 class A: pass
@@ -91,13 +91,13 @@ class TestInstanceOf(TestCase):
         self.assertTrue(instance_of((1, 2, 3), Iterable[int]))
 
     def test_instance_of_literal(self):
-        # self.assertTrue(instance_of(42, Literal[42]))
-        # self.assertTrue(instance_of(42, Literal[42], int))
-        # self.assertTrue(not instance_of(43, Literal[42]))
-        # self.assertTrue(not instance_of(42, Literal[42], str))
-        # self.assertTrue(not instance_of(42, Literal))
-        # self.assertTrue(instance_of(Any, Literal[Any]))
-        # self.assertTrue(not instance_of(42, Literal[Any]))
+        self.assertTrue(instance_of(42, Literal[42]))
+        self.assertTrue(instance_of(42, Literal[42], int))
+        self.assertTrue(not instance_of(43, Literal[42]))
+        self.assertTrue(not instance_of(42, Literal[42], str))
+        self.assertTrue(not instance_of(42, Literal))
+        self.assertTrue(instance_of(Any, Literal[Any]))
+        self.assertTrue(not instance_of(42, Literal[Any]))
         self.assertTrue(not instance_of(42, Literal))
 
     def test_instance_of_typing_literal(self):
@@ -117,7 +117,13 @@ class TestInstanceOf(TestCase):
         self.assertTrue(instance_of(numpy.array([1, 2, 3]), numpy.ndarray))
 
     def test_instance_of_nptyping_ndarray(self):
+        local_state = State()
+        register_get_type(numpy.ndarray, nptyping.NDArray.type_of, local_state)
+
         arr = numpy.array([1, 2, 3])
         arr_type = nptyping.NDArray[(3,), int]
 
-        self.assertTrue(instance_of(arr, arr_type))
+        self.assertTrue(instance_of(arr, arr_type, state=local_state))
+        self.assertTrue(instance_of([arr], List[arr_type], state=local_state))
+        self.assertTrue(instance_of([arr], List[nptyping.NDArray], state=local_state))
+        self.assertTrue(not instance_of([arr], List[nptyping.NDArray[(4,), float]], state=local_state))

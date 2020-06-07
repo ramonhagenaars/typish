@@ -42,6 +42,8 @@ pip install typish
 | ``get_args_and_return_type(hint: typing.Type[typing.Callable]) -> typing.Tuple[typing.Optional[typing.Tuple[type]], typing.Optional[type]]`` | Get the argument types and the return type of a callable type hint (e.g. ``Callable[[int], str]``). 
 | ``get_type_hints_of_callable(func: typing.Callable) -> typing.Dict[str, type]`` | Return the type hints of the parameters of the given callable.
 | ``is_type_annotation(item: typing.Any) -> bool`` | Returns whether ``item`` is a ``type`` or a ``typing`` type.
+| ``is_from_typing(cls: type) -> bool`` | Returns whether ``cls`` is from the ``typing`` module.
+| ``get_mro(obj: typing.Any) -> typing.Tuple[type, ...]`` | Wrapper around ``getmro`` from ``inspect`` to also support ``typing`` types.
 
 
 ### Types
@@ -56,6 +58,30 @@ pip install typish
 | ``Module`` | The type of a module.
 | ``NoneType`` | The type of ``None``.
 | ``EllipsisType`` | The type of ``...``.
+
+### Decorators
+
+#### hintable
+This decorator allows one to capture the type hint of a variable that calls a function. If no hint is provided, `None` 
+is passed as a value for `hint`.
+
+Just remember: with great power comes great responsibility. Use this functionality wisely. You may want to make sure 
+that if you hinted a variable with a certain type, your `hintable` function does indeed return a value of that type.
+
+```python
+@hintable
+def cast(arg: Any, hint: Type[T]) -> T:
+    return hint(arg)
+
+# The type hint on x is passed to cast:
+x: int = cast('42')
+
+# It works with MyPy hints as well:
+y = cast('42')  # type: int
+
+# Not something you would normally do, but the type hint takes precedence:
+z: int = cast('42')  # type: str
+```
 
 ### Classes
 
