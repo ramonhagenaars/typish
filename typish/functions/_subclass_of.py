@@ -36,7 +36,7 @@ def _subclass_of(cls: type, clsinfo: type) -> bool:
 
 def _forward_subclass_check(cls: type, clsinfo: type) -> bool:
     # Forward the subclass check for cls and clsinfo to delegates that know how
-    # to check that particulat cls/clsinfo type.
+    # to check that particular cls/clsinfo type.
 
     from typish.functions._get_origin import get_origin
     from typish.functions._get_args import get_args

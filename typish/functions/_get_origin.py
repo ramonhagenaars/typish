@@ -29,4 +29,5 @@ _type_per_alias = {
     'DefaultDict': defaultdict,
     'Type': type,
     'AbstractSet': Set,
+    'Optional': typing.Union,
 }
