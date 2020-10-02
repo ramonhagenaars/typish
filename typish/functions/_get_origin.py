@@ -18,6 +18,8 @@ def get_origin(t: type) -> type:
     if not result:
         if is_from_typing(t):
             result = getattr(typing, simple_name, t)
+        else:
+            result = t
     return result
 
 
