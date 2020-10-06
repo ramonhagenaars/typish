@@ -17,10 +17,10 @@ def get_origin(t: type) -> type:
     simple_name = get_simple_name(t)
     result = _type_per_alias.get(simple_name, None)
     if not result:
-        if inspect.isclass(t) and is_from_typing(t):
-            result = getattr(typing, simple_name, t)
-        else:
+        if inspect.isclass(t) and not is_from_typing(t):
             result = t
+        else:
+            result = getattr(typing, simple_name, t)
     return result
 
 
