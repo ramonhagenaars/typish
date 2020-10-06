@@ -99,6 +99,7 @@ class TestInstanceOf(TestCase):
         self.assertTrue(instance_of(Any, Literal[Any]))
         self.assertTrue(not instance_of(42, Literal[Any]))
         self.assertTrue(not instance_of(42, Literal))
+        self.assertTrue(instance_of(2, Literal[1, 2]))
 
     def test_instance_of_typing_literal(self):
         # This is to mock Python 3.8 Literal.
