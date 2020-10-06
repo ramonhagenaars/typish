@@ -1,4 +1,5 @@
 import typing
+import inspect
 from collections import deque, defaultdict
 from collections.abc import Set
 
