@@ -16,6 +16,10 @@ from unittest import TestCase
 from typish import get_origin, get_alias
 
 
+class Union:
+    """To shadow typing.Union."""
+
+
 class TestOriginAndAlias(TestCase):
     def test_get_origin(self):
         self.assertEqual(list, get_origin(List[int]))
@@ -26,6 +30,7 @@ class TestOriginAndAlias(TestCase):
         self.assertEqual(defaultdict, get_origin(DefaultDict))
         self.assertEqual(type, get_origin(Type[int]))
         self.assertEqual(Set, get_origin(AbstractSet))
+        self.assertIn('test_origin_and_alias', str(get_origin(Union)))
 
     def test_get_alias(self):
         self.assertEqual(List, get_alias(list))
