@@ -27,8 +27,13 @@ class _LiteralMeta(SubscriptableType):
         """
         if item == '__args__':
             try:
-                result = SubscriptableType.__getattribute__(cls, item),
-            except AttributeError:
+                result = SubscriptableType.__getattribute__(cls, item)
+                if (result and isinstance(result, tuple)
+                        and isinstance(result[0], tuple)):
+                    result = result[0]  # result was a tuple in a tuple.
+                if result and not isinstance(result, tuple):
+                    result = (result,)
+            except AttributeError:  # pragma: no cover
                 # In case of Python 3.5
                 result = tuple()
         elif item in ('__origin__', '__name__', '_name'):
@@ -38,10 +43,11 @@ class _LiteralMeta(SubscriptableType):
         return result
 
     def __instancecheck__(self, instance):
-        return self.__args__ and self.__args__[0] == instance
+        return self.__args__ and instance in self.__args__
 
     def __str__(self):
-        return '{}[{}]'.format(self.__name__, self.__args__[0])
+        args = ', '.join(str(arg) for arg in self.__args__)
+        return '{}[{}]'.format(self.__name__, args)
 
     def __subclasscheck__(self, subclass: typing.Any) -> bool:
         return is_literal_type(subclass)
@@ -61,7 +67,7 @@ class LiteralAlias(type, metaclass=_LiteralMeta):
         from typish.functions._get_args import get_args
 
         args = get_args(literal)
-        return LiteralAlias[args[0]] if args else LiteralAlias
+        return LiteralAlias[args] if args else LiteralAlias
 
 
 # If Literal is available (Python 3.8+), then return that type instead.

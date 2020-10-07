@@ -1,6 +1,9 @@
 import typing
 from collections import deque, defaultdict
 from collections.abc import Set
+from inspect import isclass
+
+from typish.functions._is_from_typing import is_from_typing
 
 
 def get_origin(t: type) -> type:
@@ -14,7 +17,9 @@ def get_origin(t: type) -> type:
 
     simple_name = get_simple_name(t)
     result = _type_per_alias.get(simple_name, None)
-    if not result:
+    if isclass(t) and not is_from_typing(t):
+        result = t
+    elif not result:
         result = getattr(typing, simple_name, t)
     return result
 
@@ -29,4 +34,5 @@ _type_per_alias = {
     'DefaultDict': defaultdict,
     'Type': type,
     'AbstractSet': Set,
+    'Optional': typing.Union,
 }

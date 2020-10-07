@@ -84,6 +84,9 @@ class TestSomething(TestCase):
         self.assertEqual("typish.Something['x': int]", str(Something['x': int]))
         self.assertEqual("typish.Something['a': int, 'b': typing.Callable[[int, int], str]]",
                          repr(Inyerface))
+        self.assertEqual("typish.Something['x': ...]", str(Something['x': ...]))
+        self.assertEqual("typish.Something['x': C1]", str(Something['x': C1]))
+        self.assertEqual("typish.Something['x': b]", str(Something['x': C5.b]))
 
     def test_isinstance_generic_collection(self):
         isinstance(List[int], TypingType)

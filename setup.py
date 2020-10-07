@@ -15,7 +15,7 @@ requirements = []
 
 test_requirements = [
     'numpy',
-    'nptyping>=1.1.0',
+    'nptyping>=1.3.0',
     'pycodestyle',
     'pylint',
     'mypy',
@@ -56,5 +56,6 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
     ]
 )

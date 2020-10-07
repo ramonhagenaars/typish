@@ -1,5 +1,6 @@
+from sys import version_info
 from typing import List, Dict, Union, Optional, Callable, Any, Tuple, Type, Iterable
-from unittest import TestCase
+from unittest import TestCase, skipUnless
 
 import nptyping as nptyping
 import numpy
@@ -8,10 +9,20 @@ from typish import Literal, instance_of, State, register_get_type
 
 
 class A: pass
+
+
 class B(A): pass
+
+
 class C(B): pass
+
+
 class D(C): pass
+
+
 class E(D): pass
+
+
 class F(E, str): pass
 
 
@@ -99,6 +110,7 @@ class TestInstanceOf(TestCase):
         self.assertTrue(instance_of(Any, Literal[Any]))
         self.assertTrue(not instance_of(42, Literal[Any]))
         self.assertTrue(not instance_of(42, Literal))
+        self.assertTrue(instance_of(2, Literal[1, 2]))
 
     def test_instance_of_typing_literal(self):
         # This is to mock Python 3.8 Literal.
@@ -127,3 +139,11 @@ class TestInstanceOf(TestCase):
         self.assertTrue(instance_of([arr], List[arr_type], state=local_state))
         self.assertTrue(instance_of([arr], List[nptyping.NDArray], state=local_state))
         self.assertTrue(not instance_of([arr], List[nptyping.NDArray[(4,), float]], state=local_state))
+
+    @skipUnless(10 * version_info.major + version_info.minor >= 39, 'PEP-585')
+    def test_instance_of_py39_types(self):
+        self.assertTrue(instance_of({'42': 42}, Dict[str, int]))
+        self.assertTrue(not instance_of({'42': 42}, Dict[str, str]))
+        self.assertTrue(not instance_of({42: 42}, Dict[str, int]))
+        self.assertTrue(instance_of([1, 2, 3], list[int]))
+        self.assertTrue(not instance_of([1, 2, 3], list[str]))

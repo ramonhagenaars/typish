@@ -1,7 +1,7 @@
 from typish._state import DEFAULT, State
 
 
-def instance_of(obj: object, *args: type, state: State = DEFAULT) -> bool:
+def instance_of(obj: object, *args: object, state: State = DEFAULT) -> bool:
     """
     Check whether ``obj`` is an instance of all types in ``args``, while also
     considering generics.
@@ -18,7 +18,7 @@ def instance_of(obj: object, *args: type, state: State = DEFAULT) -> bool:
     return all(_instance_of(obj, clsinfo, state) for clsinfo in args)
 
 
-def _instance_of(obj: object, clsinfo: type, state: State = DEFAULT) -> bool:
+def _instance_of(obj: object, clsinfo: object, state: State = DEFAULT) -> bool:
     from typish.classes._literal import LiteralAlias, is_literal_type
     from typish.functions._subclass_of import subclass_of
     from typish.functions._get_type import get_type

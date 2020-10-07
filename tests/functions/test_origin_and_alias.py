@@ -16,6 +16,19 @@ from unittest import TestCase
 from typish import get_origin, get_alias
 
 
+class Union:
+    """To shadow typing.Union."""
+
+
+class MetaMock(type):
+    __name__ = 'list'
+    __args__ = (str,)
+
+
+class ListMock(metaclass=MetaMock):
+    ...
+
+
 class TestOriginAndAlias(TestCase):
     def test_get_origin(self):
         self.assertEqual(list, get_origin(List[int]))
@@ -26,6 +39,7 @@ class TestOriginAndAlias(TestCase):
         self.assertEqual(defaultdict, get_origin(DefaultDict))
         self.assertEqual(type, get_origin(Type[int]))
         self.assertEqual(Set, get_origin(AbstractSet))
+        self.assertIn('test_origin_and_alias', str(get_origin(Union)))
 
     def test_get_alias(self):
         self.assertEqual(List, get_alias(list))
@@ -37,3 +51,8 @@ class TestOriginAndAlias(TestCase):
         self.assertEqual(DefaultDict, get_alias(defaultdict))
         self.assertEqual(Type, get_alias(type))
         self.assertEqual(AbstractSet, get_alias(Set))
+        self.assertEqual(List, get_alias(List))
+        self.assertEqual(Dict, get_alias(Dict))
+
+    def test_get_alias_from_parameterized_standard_list(self):
+        self.assertEqual(List[str], get_alias(ListMock))
