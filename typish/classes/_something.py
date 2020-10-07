@@ -7,7 +7,7 @@ from typish.classes._subscriptable_type import SubscriptableType
 
 class _SomethingMeta(SubscriptableType):
     """
-    This metaclass is coupled to ``Interface``.
+    This metaclass is coupled to ``Something``.
     """
     def __instancecheck__(self, instance: object) -> bool:
         # Check if all attributes from self.signature are also present in
@@ -66,9 +66,7 @@ class _SomethingMeta(SubscriptableType):
         else, we fall back on repr(obj).
         """
         if isinstance(obj, type) and not issubclass(obj, Callable):
-            if obj.__module__ == 'builtins':
-                return obj.__qualname__
-            return '{}.{}'.format(obj.__module__, obj.__qualname__)
+            return obj.__qualname__
         if obj is ...:
             return '...'
         if isinstance(obj, types.FunctionType):
@@ -104,7 +102,7 @@ class Something(type, metaclass=_SomethingMeta):
     def __getattr__(cls, item):
         # This method exists solely to fool the IDE into believing that
         # Something can have any attribute.
-        return type.__getattr__(cls, item)
+        return type.__getattr__(cls, item)  # pragma: no cover
 
     @staticmethod
     def like(obj: Any, exclude_privates: bool = True) -> 'Something':

@@ -33,7 +33,7 @@ class _LiteralMeta(SubscriptableType):
                     result = result[0]  # result was a tuple in a tuple.
                 if result and not isinstance(result, tuple):
                     result = (result,)
-            except AttributeError:
+            except AttributeError:  # pragma: no cover
                 # In case of Python 3.5
                 result = tuple()
         elif item in ('__origin__', '__name__', '_name'):

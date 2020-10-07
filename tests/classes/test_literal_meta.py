@@ -15,3 +15,11 @@ class TestLiteralMeta(TestCase):
 
     def test_str(self):
         self.assertEqual('Literal[42]', str(LiteralAlias[42]))
+
+    def test_multiple_args(self):
+        self.assertTrue(isinstance(1, LiteralAlias[1, 2]))
+        self.assertTrue(isinstance(2, LiteralAlias[1, 2]))
+        self.assertTrue(isinstance(1, LiteralAlias[(1, 2)]))
+        self.assertTrue(isinstance(2, LiteralAlias[(1, 2)]))
+        self.assertTrue(isinstance(1, LiteralAlias[((1, 2),)]))
+        self.assertTrue(isinstance(2, LiteralAlias[((1, 2),)]))
