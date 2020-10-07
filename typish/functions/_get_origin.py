@@ -1,4 +1,5 @@
 import typing
+import inspect
 from collections import deque, defaultdict
 from collections.abc import Set
 
@@ -11,11 +12,15 @@ def get_origin(t: type) -> type:
     :return: the origin of ``t`` or ``t`` if it is not generic.
     """
     from typish.functions._get_simple_name import get_simple_name
+    from typish.functions._is_from_typing import is_from_typing
 
     simple_name = get_simple_name(t)
     result = _type_per_alias.get(simple_name, None)
     if not result:
-        result = getattr(typing, simple_name, t)
+        if inspect.isclass(t) and not is_from_typing(t):
+            result = t
+        else:
+            result = getattr(typing, simple_name, t)
     return result
 
 
