@@ -3,7 +3,7 @@ import typing
 from typish._types import Unknown
 
 
-def subclass_of(cls: type, *args: type) -> bool:
+def subclass_of(cls: object, *args: object) -> bool:
     """
     Return whether ``cls`` is a subclass of all types in ``args`` while also
     considering generics.
@@ -18,7 +18,7 @@ def subclass_of(cls: type, *args: type) -> bool:
     return all(_subclass_of(cls, clsinfo) for clsinfo in args)
 
 
-def _subclass_of(cls: type, clsinfo: type) -> bool:
+def _subclass_of(cls: type, clsinfo: object) -> bool:
     # Check whether cls is a subtype of clsinfo.
     from typish.classes._literal import LiteralAlias
 
