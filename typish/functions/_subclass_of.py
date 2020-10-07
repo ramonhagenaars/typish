@@ -1,6 +1,7 @@
 import typing
 
 from typish._types import Unknown
+from typish.functions._get_alias import get_alias
 
 
 def subclass_of(cls: object, *args: object) -> bool:
@@ -21,6 +22,9 @@ def subclass_of(cls: object, *args: object) -> bool:
 def _subclass_of(cls: type, clsinfo: object) -> bool:
     # Check whether cls is a subtype of clsinfo.
     from typish.classes._literal import LiteralAlias
+
+    # Translate to typing type if possible.
+    clsinfo = get_alias(clsinfo) or clsinfo
 
     if _is_true_case(cls, clsinfo):
         result = True
@@ -87,7 +91,7 @@ def _subclass_of_generic(
         matched_info_args = info_args * len(args)
         result = _subclass_of_tuple(args, matched_info_args)
     elif (subclass_of(cls_origin, info_generic_type) and cls_args
-            and len(cls_args) == len(info_args)):
+          and len(cls_args) == len(info_args)):
         result = all(subclass_of(*tup) for tup in zip(cls_args, info_args))
     # Note that issubtype(list, List[...]) is always False.
     # Note that the number of arguments must be equal.
