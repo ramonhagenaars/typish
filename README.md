@@ -43,6 +43,7 @@ pip install typish
 | ``get_type_hints_of_callable(func: typing.Callable) -> typing.Dict[str, type]`` | Return the type hints of the parameters of the given callable.
 | ``is_type_annotation(item: typing.Any) -> bool`` | Returns whether ``item`` is a ``type`` or a ``typing`` type.
 | ``is_from_typing(cls: type) -> bool`` | Returns whether ``cls`` is from the ``typing`` module.
+| ``is_optional_type(cls: type) -> bool`` | Returns whether ``cls`` is considered to be an optional type.
 | ``get_mro(obj: typing.Any) -> typing.Tuple[type, ...]`` | Wrapper around ``getmro`` from ``inspect`` to also support ``typing`` types.
 
 
