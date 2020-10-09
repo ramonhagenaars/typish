@@ -33,6 +33,7 @@ from typish.functions._get_type_hints_of_callable import (
 )
 from typish.functions._instance_of import instance_of
 from typish.functions._is_type_annotation import is_type_annotation
+from typish.functions._is_optional_type import is_optional_type
 from typish.functions._subclass_of import subclass_of
 from typish.functions._is_from_typing import is_from_typing
 from typish._state import State, register_get_type
