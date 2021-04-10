@@ -41,6 +41,12 @@ class TestOriginAndAlias(TestCase):
         self.assertEqual(Set, get_origin(AbstractSet))
         self.assertIn('test_origin_and_alias', str(get_origin(Union)))
 
+        try:
+            self.assertEqual(dict, get_origin(dict[str, str]))
+            self.assertEqual(list, get_origin(list[int]))
+        except TypeError as err:
+            ...  # On <3.9
+
     def test_get_alias(self):
         self.assertEqual(List, get_alias(list))
         self.assertEqual(Tuple, get_alias(tuple))
