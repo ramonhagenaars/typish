@@ -18,7 +18,8 @@ def get_origin(t: type) -> type:
     simple_name = get_simple_name(t)
     result = _type_per_alias.get(simple_name, None)
     if isclass(t) and not is_from_typing(t):
-        result = t
+        # Get the origin in case of a parameterized generic.
+        result = getattr(t, '__origin__', t)
     elif not result:
         result = getattr(typing, simple_name, t)
     return result
