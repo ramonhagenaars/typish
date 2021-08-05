@@ -1,5 +1,5 @@
 __title__ = 'typish'
-__version__ = '1.9.2'
+__version__ = '1.9.3'
 __author__ = 'Ramon Hagenaars'
 __author_email__ = 'ramon.hagenaars@gmail.com'
 __description__ = 'Functionality for types'
