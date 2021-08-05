@@ -39,7 +39,7 @@ setup(
     license=meta_info['__license__'],
     long_description=long_description,
     long_description_content_type='text/markdown',
-    packages=find_packages(exclude=('tests', 'test_resources')),
+    packages=find_packages(exclude=('tests', 'tests.*', 'test_resources', 'test_resources.*')),
     install_requires=requirements,
     tests_require=test_requirements,
     extras_require=extras,
